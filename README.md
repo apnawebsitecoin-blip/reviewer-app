@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ReviewApp — Verified Reviewer Affiliate Platform
 
-## Getting Started
+एक ऐसा प्लेटफॉर्म जहाँ सिर्फ verified खरीदार रिव्यू दे सकते हैं, और हर रिव्यू से affiliate commission कमा सकते हैं।
 
-First, run the development server:
+## Tech Stack
+
+- **Frontend**: Next.js 16 (App Router) + Tailwind CSS
+- **Backend + DB + Auth**: Supabase (Postgres, Auth, Storage)
+- **Charts**: Recharts (donut chart)
+- **Icons**: Lucide React
+- **i18n**: react-i18next (Hindi + English)
+
+## Features
+
+- ✅ Verified buyer reviews (invoice upload + SHA-256 duplicate detection)
+- ✅ Sentiment donut chart (positive / neutral / negative)
+- ✅ Affiliate click tracking with IP rate-limiting & self-click prevention
+- ✅ 60% reviewer / 40% platform commission split
+- ✅ Reviewer dashboard (wallet, trust score, clicks, earnings)
+- ✅ Admin panel (review moderation, product management, commission management, user management)
+- ✅ Leaderboard, Compare, Collections, Q&A, Price Alerts
+- ✅ WhatsApp share + Referral system (₹20 bonus)
+- ✅ Hindi / English language toggle
+- ✅ Mobile-responsive UI
+
+## Setup
+
+### 1. Supabase Project बनाएं
+
+1. [supabase.com](https://supabase.com) पर जाएं → New Project बनाएं
+2. **Dashboard → SQL Editor** में `supabase-schema.sql` का पूरा content paste करके Run करें
+3. **Dashboard → Storage → New Bucket** → Name: `review-media`, Public: ON
+4. **Dashboard → Authentication → Providers → Email** → "Confirm email" OFF करें
+
+### 2. API Keys लें
+
+**Supabase Dashboard → Settings → API** से तीनों keys copy करें:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`.env.local` में भरें:
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
+SUPABASE_SERVICE_ROLE_KEY=eyJ...
+NEXT_PUBLIC_AFFILIATE_TAG=YOURAPP-21
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Admin Account बनाएं
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Signup करने के बाद Supabase SQL Editor में:
+```sql
+UPDATE profiles SET is_admin = true WHERE id = 'your-user-uuid';
+```
 
-## Learn More
+### 4. Run करें
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm install
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+App: [http://localhost:3000](http://localhost:3000)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Database Schema
 
-## Deploy on Vercel
+Full schema: `supabase-schema.sql`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Key tables:
+| Table | Purpose |
+|---|---|
+| `profiles` | User profiles (extends Supabase auth) |
+| `products` | Product catalog |
+| `reviews` | Verified buyer reviews |
+| `clicks` | Affiliate click tracking |
+| `commissions` | Commission records (manual for MVP) |
+| `notifications` | In-app notifications |
+| `questions` | Product Q&A |
+| `price_alerts` | Price drop alert subscriptions |
+| `collections` | Curated product collections |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Commission Split
+
+| Party | Share |
+|---|---|
+| Reviewer | 60% of affiliate commission |
+| Platform | 40% |
+| Buyer cashback | ~10% of total (optional) |
+
+## Deployment (Vercel)
+
+1. [vercel.com](https://vercel.com) → Import GitHub repo
+2. Environment variables add करें (same as `.env.local`)
+3. Deploy → Done!
+
+## Future Roadmap
+
+- [ ] Real affiliate network integration (Cuelinks / Admitad)
+- [ ] Automatic product feed import (cron)
+- [ ] AI fraud detection (invoice OCR)
+- [ ] Real UPI payout automation (Razorpay/Cashfree)
+- [ ] Push notifications (email/SMS/WhatsApp)
+- [ ] Advanced reviewer analytics
+
+## SQL Fix Files
+
+| File | Purpose |
+|---|---|
+| `supabase-schema.sql` | Full DB schema (run first) |
+| `fix-trigger.sql` | Trigger fix (if signup fails) |
+| `fix-signup-v2.sql` | RLS policy fix + INSERT policy |
