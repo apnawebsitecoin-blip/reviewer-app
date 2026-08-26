@@ -1,13 +1,13 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
 import { Trophy, Star } from 'lucide-react'
+import { getTranslations } from 'next-intl/server'
 
-export const revalidate = 300
+export const dynamic = 'force-dynamic'
 
 export default async function LeaderboardPage() {
-  const supabase = await createClient()
+  const [supabase, t] = await Promise.all([createClient(), getTranslations('leaderboard')])
 
-  // Top earners
   const { data: topEarners } = await supabase
     .from('profiles')
     .select('id, name, wallet_balance, trust_score, referral_code')
@@ -15,7 +15,6 @@ export default async function LeaderboardPage() {
     .order('wallet_balance', { ascending: false })
     .limit(20)
 
-  // Top trust scores
   const { data: topTrust } = await supabase
     .from('profiles')
     .select('id, name, trust_score, wallet_balance')
@@ -27,15 +26,15 @@ export default async function LeaderboardPage() {
     <div className="max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-8">
         <Trophy className="w-7 h-7 text-yellow-500" />
-        <h1 className="text-2xl font-bold text-gray-800">Leaderboard</h1>
+        <h1 className="text-2xl font-bold text-gray-800">{t('title')}</h1>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         {/* Top Earners */}
         <div className="bg-white rounded-2xl shadow overflow-hidden">
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4">
-            <h2 className="text-white font-bold flex items-center gap-2">💰 Top Earners</h2>
-            <p className="text-green-100 text-xs">Highest wallet balance</p>
+            <h2 className="text-white font-bold flex items-center gap-2">{t('topEarners')}</h2>
+            <p className="text-green-100 text-xs">{t('highestBalance')}</p>
           </div>
           <div className="divide-y">
             {(topEarners ?? []).map((user, index) => (
@@ -47,14 +46,14 @@ export default async function LeaderboardPage() {
                   {(user.name ?? 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{user.name ?? 'User'}</p>
-                  <p className="text-xs text-gray-400">Trust: {user.trust_score}</p>
+                  <p className="text-sm font-medium text-gray-800 truncate">{user.name ?? t('user')}</p>
+                  <p className="text-xs text-gray-400">{t('trustLabel', { score: user.trust_score })}</p>
                 </div>
                 <span className="text-green-600 font-bold text-sm">{formatCurrency(user.wallet_balance)}</span>
               </div>
             ))}
             {(topEarners ?? []).length === 0 && (
-              <p className="p-4 text-center text-gray-400 text-sm">अभी कोई earner नहीं</p>
+              <p className="p-4 text-center text-gray-400 text-sm">{t('noEarners')}</p>
             )}
           </div>
         </div>
@@ -62,8 +61,8 @@ export default async function LeaderboardPage() {
         {/* Top Trust Scores */}
         <div className="bg-white rounded-2xl shadow overflow-hidden">
           <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
-            <h2 className="text-white font-bold flex items-center gap-2"><Star className="w-4 h-4" />Most Trusted</h2>
-            <p className="text-indigo-100 text-xs">Highest trust score reviewers</p>
+            <h2 className="text-white font-bold flex items-center gap-2"><Star className="w-4 h-4" />{t('mostTrusted')}</h2>
+            <p className="text-indigo-100 text-xs">{t('highestTrust')}</p>
           </div>
           <div className="divide-y">
             {(topTrust ?? []).map((user, index) => (
@@ -75,8 +74,8 @@ export default async function LeaderboardPage() {
                   {(user.name ?? 'U').charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-800 truncate">{user.name ?? 'User'}</p>
-                  <p className="text-xs text-gray-400">Wallet: {formatCurrency(user.wallet_balance)}</p>
+                  <p className="text-sm font-medium text-gray-800 truncate">{user.name ?? t('user')}</p>
+                  <p className="text-xs text-gray-400">{t('walletLabel', { amount: formatCurrency(user.wallet_balance) })}</p>
                 </div>
                 <span className="text-yellow-500 font-bold flex items-center gap-1">
                   <Star className="w-3 h-3 fill-yellow-400" />{user.trust_score}
@@ -84,7 +83,7 @@ export default async function LeaderboardPage() {
               </div>
             ))}
             {(topTrust ?? []).length === 0 && (
-              <p className="p-4 text-center text-gray-400 text-sm">अभी कोई reviewer नहीं</p>
+              <p className="p-4 text-center text-gray-400 text-sm">{t('noReviewers')}</p>
             )}
           </div>
         </div>

@@ -1,8 +1,10 @@
 'use client'
 import { useState } from 'react'
 import { Copy, Check } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function CopyReferral({ code }: { code: string }) {
+  const t = useTranslations('common')
   const [copied, setCopied] = useState(false)
   return (
     <div className="flex items-center gap-2">
@@ -10,7 +12,9 @@ export default function CopyReferral({ code }: { code: string }) {
       <button
         onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
         className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs hover:bg-indigo-700 flex items-center gap-1 min-w-[60px] justify-center">
-        {copied ? <><Check className="w-3 h-3" />Copied!</> : <><Copy className="w-3 h-3" />Copy</>}
+        {copied
+          ? <><Check className="w-3 h-3" />{t('copied')}</>
+          : <><Copy className="w-3 h-3" />{t('copy')}</>}
       </button>
     </div>
   )

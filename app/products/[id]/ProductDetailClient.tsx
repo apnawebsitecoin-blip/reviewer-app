@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ReviewForm from '@/components/ReviewForm'
 import { ShoppingCart, Share2, Bell, RotateCcw } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import type { Product } from '@/lib/types'
 import type { User } from '@supabase/supabase-js'
 
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function ProductDetailClient({ product, user }: Props) {
+  const t = useTranslations('product')
   const router = useRouter()
   const supabase = createClient()
   const [showReviewForm, setShowReviewForm] = useState(false)
@@ -26,13 +28,17 @@ export default function ProductDetailClient({ product, user }: Props) {
   }
 
   const handleWhatsAppShare = () => {
-    const url = `${window.location.origin}/products/${product.id}?ref=${user?.id ?? ''}`
-    const text = `Check out this product on ReviewApp: ${product.name} - ${url}`
-    if (navigator.share) {
-      navigator.share({ title: product.name, url })
-    } else {
-      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')
-    }
+    const url = `${window.location.origin}/products/${product.id}${user?.id ? `?ref=${user.id}` : ''}`
+    const price = product.price ? `₹${product.price.toLocaleString('en-IN')}` : null
+    const lines = [
+      `🛍️ *${product.name}*`,
+      price ? t('whatsappPrice', { price }) : '',
+      ``,
+      t('whatsappReviews'),
+      t('whatsappCta'),
+      url,
+    ].filter(l => l !== undefined)
+    window.open(`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`, '_blank')
   }
 
   const handleMarkReturned = async () => {
@@ -55,39 +61,39 @@ export default function ProductDetailClient({ product, user }: Props) {
       <div className="flex flex-wrap gap-2 mt-4">
         <button onClick={handleBuyNow}
           className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 font-semibold transition">
-          <ShoppingCart className="w-4 h-4" />अभी खरीदें
+          <ShoppingCart className="w-4 h-4" />{t('buyNow')}
         </button>
 
         {user && (
           <button onClick={() => setShowReviewForm(true)}
             className="flex items-center gap-2 border border-indigo-600 text-indigo-600 px-4 py-2.5 rounded-xl hover:bg-indigo-50 font-medium transition">
-            + रिव्यू जोड़ें
+            {t('addReview')}
           </button>
         )}
 
         <button onClick={handleWhatsAppShare}
-          className="flex items-center gap-2 bg-green-500 text-white px-4 py-2.5 rounded-xl hover:bg-green-600 transition">
-          <Share2 className="w-4 h-4" />Share
+          className="flex items-center gap-2 bg-green-500 text-white px-4 py-2.5 rounded-xl hover:bg-green-600 transition font-semibold">
+          <Share2 className="w-4 h-4" />WhatsApp
         </button>
 
         <button onClick={() => setShowAlertForm(!showAlertForm)}
           className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition">
-          <Bell className="w-4 h-4" />{alertSaved ? 'Alert Set ✓' : 'Price Alert'}
+          <Bell className="w-4 h-4" />{alertSaved ? t('alertSet') : t('priceAlert')}
         </button>
 
         {user && (
           <button onClick={handleMarkReturned}
             className="flex items-center gap-2 border border-orange-300 text-orange-500 px-4 py-2.5 rounded-xl hover:bg-orange-50 transition text-sm">
-            <RotateCcw className="w-4 h-4" />Returned?
+            <RotateCcw className="w-4 h-4" />{t('returned')}
           </button>
         )}
       </div>
 
       {showAlertForm && (
         <form onSubmit={handlePriceAlert} className="flex gap-2 mt-3">
-          <input type="number" placeholder="Target price (₹)" value={alertPrice} onChange={e => setAlertPrice(e.target.value)}
+          <input type="number" placeholder={t('targetPricePlaceholder')} value={alertPrice} onChange={e => setAlertPrice(e.target.value)}
             className="border rounded-lg px-3 py-1.5 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
-          <button type="submit" className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm">Set Alert</button>
+          <button type="submit" className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm">{t('setAlert')}</button>
         </form>
       )}
 

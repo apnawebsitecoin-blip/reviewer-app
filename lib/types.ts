@@ -99,3 +99,29 @@ export interface Collection {
   product_ids: string[]
   created_at: string
 }
+
+export interface VideoReview {
+  id: string
+  product_id: string
+  reviewer_id: string
+  youtube_video_id: string
+  title: string
+  description: string | null
+  status: 'processing' | 'live' | 'failed' | 'deleted'
+  created_at: string
+  profiles?: { name: string | null }
+  products?: { name: string }
+}
+
+export interface Coupon {
+  id: string
+  code: string
+  title: string
+  discount_type: 'percent' | 'flat'
+  discount_value: number
+  product_id: string | null
+  category: string | null
+  expires_at: string | null
+  is_active: boolean
+  created_at: string
+}

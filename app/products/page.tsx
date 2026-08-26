@@ -5,11 +5,13 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Search, SlidersHorizontal } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 import type { Product } from '@/lib/types'
 
 const CATEGORIES = ['Electronics', 'Beauty', 'Kitchen', 'Fashion', 'Health', 'Books', 'Sports', 'Home', 'Toys', 'Other']
 
 export default function ProductsPage() {
+  const t = useTranslations('product')
   const supabase = createClient()
   const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState('')
@@ -32,14 +34,14 @@ export default function ProductsPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-gray-800 mb-4">सभी प्रोडक्ट</h1>
+      <h1 className="text-xl font-bold text-gray-800 mb-4">{t('allProducts')}</h1>
 
       {/* Search + Filter */}
       <div className="flex gap-3 mb-6 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
-            type="text" placeholder="प्रोडक्ट खोजें..." value={search}
+            type="text" placeholder={t('searchPlaceholder')} value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
@@ -48,7 +50,7 @@ export default function ProductsPage() {
           <SlidersHorizontal className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <select value={category} onChange={e => setCategory(e.target.value)}
             className="pl-9 pr-3 py-2 border rounded-lg text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
-            <option value="">सभी कैटेगरी</option>
+            <option value="">{t('allCategories')}</option>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
@@ -61,7 +63,7 @@ export default function ProductsPage() {
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">कोई प्रोडक्ट नहीं मिला</div>
+        <div className="text-center py-16 text-gray-400">{t('notFound')}</div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {products.map(p => (

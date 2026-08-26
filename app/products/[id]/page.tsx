@@ -2,14 +2,19 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import ProductDetailClient from './ProductDetailClient'
-import { ClientSentimentChart, ClientQASection } from './ClientComponents'
+import { ClientSentimentChart, ClientQASection, ClientPriceHistoryChart } from './ClientComponents'
+import CouponSection from '@/components/CouponSection'
+import VideoReviewsSection from '@/components/VideoReviewsSection'
 import { formatCurrency, formatDate, getSentimentBg } from '@/lib/utils'
+import { getSiteSettings } from '@/lib/settings'
+import { getTranslations } from 'next-intl/server'
+import type { Coupon, VideoReview } from '@/lib/types'
 
 export const revalidate = 30
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const supabase = await createClient()
+  const [supabase, settings, t] = await Promise.all([createClient(), getSiteSettings(), getTranslations('product')])
 
   const { data: product } = await supabase.from('products').select('*').eq('id', id).single()
   if (!product) notFound()
@@ -28,6 +33,30 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const negative = verifiedReviews.filter(r => r.sentiment === 'negative').length
 
   const { data: { user } } = await supabase.auth.getUser()
+
+  // Video reviews
+  const { data: videoRows } = await supabase
+    .from('video_reviews')
+    .select('*, profiles(name)')
+    .eq('product_id', id)
+    .eq('status', 'live')
+    .order('created_at', { ascending: false })
+  const videoReviews: VideoReview[] = (videoRows as VideoReview[]) ?? []
+
+  // Fetch all active coupons once, filter in JS (table is small)
+  const { data: allCoupons } = await supabase
+    .from('coupons')
+    .select('*')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
+
+  const now = new Date()
+  const coupons: Coupon[] = (allCoupons ?? []).filter((c: Coupon) => {
+    if (c.expires_at && new Date(c.expires_at) < now) return false
+    if (c.product_id && c.product_id !== product.id) return false
+    if (!c.product_id && c.category && c.category !== product.category) return false
+    return true
+  })
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -50,24 +79,30 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               {product.price && <p className="text-2xl font-bold text-indigo-600 mt-2">{formatCurrency(product.price)}</p>}
             </div>
 
+            {settings.featureFlags?.showCoupons !== false && coupons.length > 0 && <CouponSection coupons={coupons} />}
+
             <p className="text-xs text-gray-400 mt-3 italic">
-              इस लिंक से खरीदने पर हमें कमीशन मिल सकता है (affiliate disclosure)।
+              {t('affiliateDisclosure')}
             </p>
 
             <ProductDetailClient product={product} user={user} />
+
+            {settings.featureFlags?.showPriceHistory !== false && product.price && (
+              <ClientPriceHistoryChart productId={product.id} currentPrice={product.price} />
+            )}
           </div>
         </div>
 
         <div className="p-6 border-t">
           <h2 className="font-bold text-gray-800 mb-4 text-lg">
-            रिव्यू ({verifiedReviews.length})
+            {t('reviewsCount', { count: verifiedReviews.length })}
           </h2>
 
           <ClientSentimentChart positive={positive} neutral={neutral} negative={negative} />
 
           <div className="mt-6 space-y-4">
             {verifiedReviews.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-8">अभी तक कोई वेरिफाइड रिव्यू नहीं। पहले बनें!</p>
+              <p className="text-gray-400 text-sm text-center py-8">{t('noReviews')}</p>
             ) : (
               verifiedReviews.map(review => (
                 <div key={review.id} className="border rounded-xl p-4">
@@ -78,34 +113,40 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-gray-800">{(review.profiles as any)?.name ?? 'Anonymous'}</span>
+                          <span className="text-sm font-medium text-gray-800">{(review.profiles as any)?.name ?? t('anonymous')}</span>
                           {review.detailed_badge && (
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Detailed ⭐</span>
+                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{t('detailedBadge')}</span>
                           )}
                           {(review.profiles as any)?.trust_score >= 5 && (
-                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Trusted</span>
+                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">{t('trustedBadge')}</span>
                           )}
                         </div>
                         <span className="text-xs text-gray-400">{formatDate(review.created_at)}</span>
                       </div>
                     </div>
                     <span className={`text-xs px-2 py-1 rounded-full font-medium ${getSentimentBg(review.sentiment)}`}>
-                      {review.sentiment === 'positive' ? '👍 सकारात्मक' : review.sentiment === 'negative' ? '👎 नकारात्मक' : '😐 तटस्थ'}
+                      {review.sentiment === 'positive' ? t('positive') : review.sentiment === 'negative' ? t('negative') : t('neutral')}
                     </span>
                   </div>
                   {review.review_text && <p className="text-sm text-gray-600">{review.review_text}</p>}
                   {review.later_returned && (
-                    <p className="text-xs text-orange-500 mt-2 italic">⚠️ Reviewer later returned this item</p>
+                    <p className="text-xs text-orange-500 mt-2 italic">{t('returnedWarning')}</p>
                   )}
                   {review.media_url && (
                     <a href={review.media_url} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-indigo-500 hover:underline mt-2 block">📷 प्रूफ देखें</a>
+                      className="text-xs text-indigo-500 hover:underline mt-2 block">{t('viewProof')}</a>
                   )}
                 </div>
               ))
             )}
           </div>
         </div>
+
+        {settings.featureFlags?.showVideoReviews !== false && videoReviews.length > 0 && (
+          <div className="p-6 border-t">
+            <VideoReviewsSection videos={videoReviews} />
+          </div>
+        )}
       </div>
 
       <ClientQASection productId={id} user={user} />

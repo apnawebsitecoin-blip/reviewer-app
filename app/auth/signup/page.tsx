@@ -4,8 +4,10 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { ShoppingBag } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 export default function SignupPage() {
+  const t = useTranslations('auth.signup')
   const supabase = createClient()
   const router = useRouter()
   const [name, setName] = useState('')
@@ -45,7 +47,7 @@ export default function SignupPage() {
     }
 
     if (!data.user) {
-      setError('Signup failed — please try again')
+      setError(t('failed'))
       setLoading(false)
       return
     }
@@ -91,40 +93,40 @@ export default function SignupPage() {
       <div className="bg-white rounded-2xl shadow p-8 w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
           <ShoppingBag className="w-10 h-10 text-indigo-600 mb-2" />
-          <h1 className="text-2xl font-bold text-gray-800">साइनअप करें</h1>
-          <p className="text-sm text-gray-500">ReviewApp के साथ रिव्यू करके कमाएं</p>
+          <h1 className="text-2xl font-bold text-gray-800">{t('title')}</h1>
+          <p className="text-sm text-gray-500">{t('subtitle')}</p>
         </div>
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">नाम</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('name')}</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)} required
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('email')}</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} required
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('password')}</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Referral Code (वैकल्पिक)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">{t('referral')}</label>
             <input type="text" value={referralCode} onChange={e => setReferralCode(e.target.value.toUpperCase())}
-              placeholder="किसी का referral code"
+              placeholder={t('referralPlaceholder')}
               className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 uppercase" />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <button type="submit" disabled={loading}
             className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-60 font-medium">
-            {loading ? 'अकाउंट बन रहा है...' : 'साइनअप करें'}
+            {loading ? t('loading') : t('submit')}
           </button>
         </form>
         <p className="text-center text-sm text-gray-500 mt-4">
-          पहले से अकाउंट है?{' '}
-          <Link href="/auth/login" className="text-indigo-600 hover:underline">लॉगिन करें</Link>
+          {t('hasAccount')}{' '}
+          <Link href="/auth/login" className="text-indigo-600 hover:underline">{t('loginLink')}</Link>
         </p>
       </div>
     </div>

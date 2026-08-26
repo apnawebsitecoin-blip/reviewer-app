@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import Image from 'next/image'
 import Link from 'next/link'
 import { formatCurrency } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 import type { Product } from '@/lib/types'
 
 interface ProductWithStats extends Product {
@@ -11,7 +12,11 @@ interface ProductWithStats extends Product {
   positivePercent: number
 }
 
+const CATEGORIES = ['Electronics', 'Beauty', 'Kitchen', 'Fashion', 'Health', 'Books', 'Sports', 'Home', 'Toys', 'Other']
+
 export default function ComparePage() {
+  const t = useTranslations('compare')
+  const tProduct = useTranslations('product')
   const supabase = createClient()
   const [products, setProducts] = useState<Product[]>([])
   const [selected, setSelected] = useState<string[]>([])
@@ -41,20 +46,18 @@ export default function ComparePage() {
     setLoading(false)
   }
 
-  const CATEGORIES = ['Electronics', 'Beauty', 'Kitchen', 'Fashion', 'Health', 'Books', 'Sports', 'Home', 'Toys', 'Other']
-
   return (
     <div>
-      <h1 className="text-xl font-bold text-gray-800 mb-6">Compare Products</h1>
+      <h1 className="text-xl font-bold text-gray-800 mb-6">{t('title')}</h1>
 
       <div className="bg-white rounded-2xl shadow p-5 mb-6">
         <div className="flex gap-3 mb-4 flex-wrap">
           <select value={category} onChange={e => { setCategory(e.target.value); setSelected([]) }}
             className="border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            <option value="">सभी Categories</option>
+            <option value="">{tProduct('allCategories')}</option>
             {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
-          <p className="text-sm text-gray-400 self-center">2-3 products चुनें compare के लिए</p>
+          <p className="text-sm text-gray-400 self-center">{t('instruction')}</p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto">
@@ -72,7 +75,7 @@ export default function ComparePage() {
 
         <button onClick={handleCompare} disabled={selected.length < 2 || loading}
           className="mt-4 bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-indigo-700 disabled:opacity-60">
-          {loading ? 'Compare हो रहा है...' : `Compare (${selected.length} selected)`}
+          {loading ? t('comparing') : t('compareBtn', { count: selected.length })}
         </button>
       </div>
 
@@ -82,7 +85,7 @@ export default function ComparePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b bg-gray-50">
-                  <th className="px-4 py-3 text-left text-gray-500 text-xs w-32">Feature</th>
+                  <th className="px-4 py-3 text-left text-gray-500 text-xs w-32">{t('colFeature')}</th>
                   {compareData.map(p => (
                     <th key={p.id} className="px-4 py-3 text-center">
                       <Link href={`/products/${p.id}`} className="text-indigo-600 hover:underline font-medium line-clamp-2 block max-w-[120px] mx-auto">
@@ -94,7 +97,7 @@ export default function ComparePage() {
               </thead>
               <tbody className="divide-y">
                 <tr>
-                  <td className="px-4 py-3 text-gray-500 font-medium text-xs">Price</td>
+                  <td className="px-4 py-3 text-gray-500 font-medium text-xs">{t('colPrice')}</td>
                   {compareData.map(p => (
                     <td key={p.id} className="px-4 py-3 text-center font-bold text-indigo-600">
                       {p.price ? formatCurrency(p.price) : '—'}
@@ -102,13 +105,13 @@ export default function ComparePage() {
                   ))}
                 </tr>
                 <tr className="bg-gray-50">
-                  <td className="px-4 py-3 text-gray-500 font-medium text-xs">Reviews</td>
+                  <td className="px-4 py-3 text-gray-500 font-medium text-xs">{t('colReviews')}</td>
                   {compareData.map(p => (
                     <td key={p.id} className="px-4 py-3 text-center text-gray-700">{p.reviewCount}</td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 text-gray-500 font-medium text-xs">Positive %</td>
+                  <td className="px-4 py-3 text-gray-500 font-medium text-xs">{t('colPositivePct')}</td>
                   {compareData.map(p => (
                     <td key={p.id} className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-2">
@@ -121,18 +124,18 @@ export default function ComparePage() {
                   ))}
                 </tr>
                 <tr className="bg-gray-50">
-                  <td className="px-4 py-3 text-gray-500 font-medium text-xs">Platform</td>
+                  <td className="px-4 py-3 text-gray-500 font-medium text-xs">{t('colPlatform')}</td>
                   {compareData.map(p => (
                     <td key={p.id} className="px-4 py-3 text-center capitalize text-gray-600">{p.platform ?? '—'}</td>
                   ))}
                 </tr>
                 <tr>
-                  <td className="px-4 py-3 text-gray-500 font-medium text-xs">Buy</td>
+                  <td className="px-4 py-3 text-gray-500 font-medium text-xs">{t('colBuy')}</td>
                   {compareData.map(p => (
                     <td key={p.id} className="px-4 py-3 text-center">
                       <Link href={`/products/${p.id}`}
                         className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-indigo-700">
-                        देखें
+                        {t('viewBtn')}
                       </Link>
                     </td>
                   ))}
