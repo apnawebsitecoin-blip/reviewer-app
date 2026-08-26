@@ -43,7 +43,8 @@
       "submit": "Sign Up",
       "hasAccount": "Already have an account?",
       "loginLink": "Login",
-      "failed": "Signup failed — please try again"
+      "failed": "Signup failed — please try again",
+      "selfReferralError": "You cannot use your own referral code."
     }
   },
   "home": {
@@ -88,7 +89,11 @@
     "returned": "Returned?",
     "whatsappPrice": "💰 Only {price}!",
     "whatsappReviews": "✅ See verified reviews from real buyers",
-    "whatsappCta": "💸 Buy here and earn cashback:"
+    "whatsappCta": "💸 Buy here and earn cashback:",
+    "verifiedPurchase": "✓ Verified Purchase",
+    "telegramShare": "Telegram",
+    "instagramShare": "Instagram",
+    "instagramCopied": "Link copied! Paste in Instagram."
   },
   "review": {
     "addTitle": "Add Review",
@@ -110,7 +115,8 @@
     "errorCheckbox": "Please check the honest review checkbox",
     "errorInvoice": "Please upload an invoice/screenshot",
     "errorLogin": "Please login to continue",
-    "errorDuplicate": "You have already reviewed this product."
+    "errorDuplicate": "You have already reviewed this product.",
+    "errorSpam": "You've submitted 3 reviews in the last 24h. Please wait before adding more."
   },
   "compare": {
     "title": "Compare Products",
@@ -135,7 +141,11 @@
     "walletLabel": "Wallet: {amount}",
     "user": "User",
     "noEarners": "No earners yet",
-    "noReviewers": "No reviewers yet"
+    "noReviewers": "No reviewers yet",
+    "topReferrers": "🤝 Top Referrers",
+    "mostReferrals": "Most referrals brought in",
+    "referralsLabel": "{count} referrals",
+    "noReferrers": "No referrers yet"
   },
   "dashboard": {
     "titlePage": "My Dashboard",
@@ -153,6 +163,13 @@
     "withdrawNote": "Admin will manually process. UPI + PAN will be verified.",
     "panRequired": "PAN Number (required)",
     "upiId": "UPI ID",
+    "withdrawAmount": "Amount (₹)",
+    "withdrawBankAccount": "Bank Account Number",
+    "withdrawBankIFSC": "IFSC Code",
+    "withdrawPending": "Withdrawal Pending",
+    "withdrawPendingDesc": "₹{amount} request is under review",
+    "withdrawNewRequest": "New Withdrawal",
+    "withdrawError": "Failed — check your balance and try again",
     "withdrawSubmit": "Send Withdraw Request",
     "withdrawSuccess": "✓ Request sent! Admin will contact you.",
     "referralTitle": "Earn via Referral",
@@ -164,6 +181,10 @@
     "statusConfirmed": "Confirmed",
     "statusPaidOut": "Paid Out",
     "noCommission": "No commissions yet. Share your reviews!",
+    "wishlistLink": "My Wishlist",
+    "submitDealLink": "Submit a Deal",
+    "premiumLink": "Premium ✨",
+    "notifPrefsLink": "🔔 Notification Preferences",
     "profileSettings": "⚙️ Profile Settings",
     "myReviews": "My Reviews",
     "noReviewsMsg": "No reviews yet",
@@ -214,6 +235,55 @@
     "endsIn": "Ends in",
     "expired": "Expired"
   },
+  "checkin": {
+    "title": "Daily Check-in",
+    "subtitle": "Check in every day to earn wallet rewards",
+    "streak": "{days} day streak 🔥",
+    "todayReward": "Today: ₹{amount}",
+    "checkIn": "Check In",
+    "checkedIn": "Checked In ✓",
+    "nextCheckin": "Come back tomorrow!",
+    "nextTier": "{days} more days → ₹{amount}/day"
+  },
+  "referralTier": {
+    "title": "Referral Tier",
+    "referredCount": "{count} people referred",
+    "bonusPerReferral": "₹{amount} per referral",
+    "progressTo": "{count} more to {tier}",
+    "atMax": "Maximum tier reached! 💎",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "platinum": "Platinum"
+  },
+  "wishlist": {
+    "save": "Save",
+    "saved": "Saved",
+    "remove": "Unsave",
+    "title": "My Wishlist",
+    "empty": "Your wishlist is empty",
+    "emptyDesc": "Save products you like to review them later.",
+    "browseCta": "Browse Products",
+    "viewDeal": "View Deal",
+    "navLink": "Wishlist"
+  },
+  "socialProof": {
+    "viewedToday": "{count} viewed today",
+    "savedThis": "{count} saved this",
+    "verifiedBuyers": "{count} verified buyers"
+  },
+  "notifications": {
+    "title": "Notification Preferences",
+    "pushNote": "These control which push notifications you receive.",
+    "walletCredit": "Wallet Credit",
+    "walletCreditDesc": "When cashback or bonus is added to your wallet",
+    "withdrawalUpdate": "Withdrawal Update",
+    "withdrawalUpdateDesc": "When your withdrawal is approved, paid or rejected",
+    "priceDrop": "Price Drop Alert",
+    "priceDropDesc": "When a product you saved drops to your target price",
+    "save": "Save Preferences",
+    "saved": "Saved!"
+  },
   "admin": {
     "pendingReviews": "Pending Reviews",
     "approve": "Approve",
@@ -223,5 +293,20 @@
     "commissions": "Commissions",
     "analytics": "Analytics",
     "users": "Users"
+  },
+  "deals": {
+    "title": "Submit a Community Deal",
+    "submitBtn": "Submit Deal",
+    "submitting": "Submitting...",
+    "success": "Deal Submitted!",
+    "successDesc": "Your deal is under review. We'll add it to the catalog if approved.",
+    "productName": "Product Name",
+    "productUrl": "Product URL",
+    "price": "Price (₹)",
+    "category": "Category",
+    "imageUrl": "Image URL (optional)",
+    "description": "Description (optional)",
+    "descPlaceholder": "Tell the community why this is a great deal...",
+    "loginRequired": "Please login to submit a deal"
   }
 }

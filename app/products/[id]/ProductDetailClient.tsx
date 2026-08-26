@@ -3,17 +3,19 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import ReviewForm from '@/components/ReviewForm'
-import { ShoppingCart, Share2, Bell, RotateCcw } from 'lucide-react'
+import { ShoppingCart, Share2, Bell, RotateCcw, Copy } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import WishlistButton from '@/components/WishlistButton'
 import type { Product } from '@/lib/types'
 import type { User } from '@supabase/supabase-js'
 
 interface Props {
   product: Product
   user: User | null
+  initialWishlisted: boolean
 }
 
-export default function ProductDetailClient({ product, user }: Props) {
+export default function ProductDetailClient({ product, user, initialWishlisted }: Props) {
   const t = useTranslations('product')
   const router = useRouter()
   const supabase = createClient()
@@ -21,6 +23,7 @@ export default function ProductDetailClient({ product, user }: Props) {
   const [alertPrice, setAlertPrice] = useState('')
   const [showAlertForm, setShowAlertForm] = useState(false)
   const [alertSaved, setAlertSaved] = useState(false)
+  const [instagramCopied, setInstagramCopied] = useState(false)
 
   const handleBuyNow = async () => {
     const reviewerId = user?.id ?? 'anonymous'
@@ -39,6 +42,19 @@ export default function ProductDetailClient({ product, user }: Props) {
       url,
     ].filter(l => l !== undefined)
     window.open(`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`, '_blank')
+  }
+
+  const handleTelegramShare = () => {
+    const url = `${window.location.origin}/products/${product.id}${user?.id ? `?ref=${user.id}` : ''}`
+    const text = `🛍️ ${product.name}\n${url}`
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`🛍️ ${product.name}`)}`, '_blank')
+  }
+
+  const handleInstagramShare = async () => {
+    const url = `${window.location.origin}/products/${product.id}${user?.id ? `?ref=${user.id}` : ''}`
+    await navigator.clipboard.writeText(url)
+    setInstagramCopied(true)
+    setTimeout(() => setInstagramCopied(false), 3000)
   }
 
   const handleMarkReturned = async () => {
@@ -76,10 +92,22 @@ export default function ProductDetailClient({ product, user }: Props) {
           <Share2 className="w-4 h-4" />WhatsApp
         </button>
 
+        <button onClick={handleTelegramShare}
+          className="flex items-center gap-2 bg-sky-500 text-white px-4 py-2.5 rounded-xl hover:bg-sky-600 transition font-semibold">
+          <Share2 className="w-4 h-4" />{t('telegramShare')}
+        </button>
+
+        <button onClick={handleInstagramShare}
+          className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white px-4 py-2.5 rounded-xl hover:opacity-90 transition font-semibold">
+          <Copy className="w-4 h-4" />{instagramCopied ? t('instagramCopied') : t('instagramShare')}
+        </button>
+
         <button onClick={() => setShowAlertForm(!showAlertForm)}
           className="flex items-center gap-2 border border-gray-300 text-gray-600 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition">
           <Bell className="w-4 h-4" />{alertSaved ? t('alertSet') : t('priceAlert')}
         </button>
+
+        <WishlistButton productId={product.id} userId={user?.id ?? null} initialWishlisted={initialWishlisted} />
 
         {user && (
           <button onClick={handleMarkReturned}

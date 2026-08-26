@@ -27,10 +27,14 @@ export default function SignupPage() {
     if (referralCode.trim()) {
       const { data: referrer } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, referral_code')
         .eq('referral_code', referralCode.trim().toUpperCase())
         .single()
-      if (referrer) referredById = referrer.id
+      if (referrer) {
+        // Self-referral check: compare referral code against what this user would get
+        // We can't know the user ID yet, but we can block if the entered code matches their own generated code after signup
+        referredById = referrer.id
+      }
     }
 
     // Create auth user
@@ -54,6 +58,14 @@ export default function SignupPage() {
 
     // Manually create profile (trigger backup — works even if DB trigger is absent)
     const referralCodeGenerated = data.user.id.substring(0, 8).toUpperCase()
+
+    // Self-referral guard: block if the entered referral code is the same as what this account would generate
+    if (referredById && referralCode.trim().toUpperCase() === referralCodeGenerated) {
+      setError(t('selfReferralError'))
+      setLoading(false)
+      return
+    }
+
     await supabase.from('profiles').upsert(
       {
         id: data.user.id,
@@ -83,6 +95,9 @@ export default function SignupPage() {
         .update({ wallet_balance: 20 })
         .eq('id', data.user.id)
     }
+
+    // Log signup IP in background (fire-and-forget)
+    fetch('/api/auth/log-ip', { method: 'POST' }).catch(() => {})
 
     router.push('/dashboard')
     router.refresh()

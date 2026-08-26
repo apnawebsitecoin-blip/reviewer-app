@@ -113,6 +113,38 @@ export interface VideoReview {
   products?: { name: string }
 }
 
+export type WithdrawalStatus = 'pending' | 'approved' | 'rejected' | 'paid'
+
+export interface WithdrawalRequest {
+  id: string
+  user_id: string
+  amount: number
+  status: WithdrawalStatus
+  upi_id: string | null
+  pan_number: string | null
+  bank_account: string | null
+  bank_ifsc: string | null
+  admin_note: string | null
+  created_at: string
+  updated_at: string
+  profiles?: Pick<Profile, 'id' | 'name'>
+}
+
+export interface DailyCheckin {
+  id: string
+  user_id: string
+  checked_in_at: string
+  reward_amount: number
+}
+
+export interface Wishlist {
+  id: string
+  user_id: string
+  product_id: string
+  created_at: string
+  products?: Product
+}
+
 export interface Coupon {
   id: string
   code: string

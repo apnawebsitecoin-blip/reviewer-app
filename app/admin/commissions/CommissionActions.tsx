@@ -2,8 +2,15 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { Loader2, CheckCircle2, Banknote } from 'lucide-react'
 
-export default function CommissionActions({ commissionId, currentStatus }: { commissionId: string; currentStatus: string }) {
+export default function CommissionActions({
+  commissionId,
+  currentStatus,
+}: {
+  commissionId: string
+  currentStatus: string
+}) {
   const supabase = createClient()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -15,20 +22,31 @@ export default function CommissionActions({ commissionId, currentStatus }: { com
     setLoading(false)
   }
 
-  if (currentStatus === 'paid') return <span className="text-xs text-gray-400">Paid ✓</span>
+  if (currentStatus === 'paid') {
+    return (
+      <span className="flex items-center gap-1 text-xs text-emerald-600 font-semibold">
+        <CheckCircle2 className="w-3.5 h-3.5" /> Paid
+      </span>
+    )
+  }
 
   return (
     <div className="flex gap-2">
-      {currentStatus === 'pending' && (
-        <button onClick={() => update('confirmed')} disabled={loading}
-          className="bg-blue-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-blue-700 disabled:opacity-60">
-          Confirm
+      {loading ? (
+        <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
+      ) : currentStatus === 'pending' ? (
+        <button
+          onClick={() => update('confirmed')}
+          className="flex items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-100 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+        >
+          <CheckCircle2 className="w-3.5 h-3.5" /> Confirm
         </button>
-      )}
-      {currentStatus === 'confirmed' && (
-        <button onClick={() => update('paid')} disabled={loading}
-          className="bg-green-600 text-white px-3 py-1 rounded-lg text-xs hover:bg-green-700 disabled:opacity-60">
-          Mark Paid
+      ) : (
+        <button
+          onClick={() => update('paid')}
+          className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+        >
+          <Banknote className="w-3.5 h-3.5" /> Mark Paid
         </button>
       )}
     </div>

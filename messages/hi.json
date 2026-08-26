@@ -43,7 +43,8 @@
       "submit": "साइनअप करें",
       "hasAccount": "पहले से अकाउंट है?",
       "loginLink": "लॉगिन करें",
-      "failed": "साइनअप नहीं हो पाया, दोबारा कोशिश करें"
+      "failed": "साइनअप नहीं हो पाया, दोबारा कोशिश करें",
+      "selfReferralError": "आप अपना खुद का referral code use नहीं कर सकते।"
     }
   },
   "home": {
@@ -88,7 +89,11 @@
     "whatsappPrice": "💰 सिर्फ {price} में!",
     "whatsappReviews": "✅ असली खरीदारों के वेरिफाइड रिव्यू देखें",
     "whatsappCta": "💸 यहाँ से खरीदो और कैशबैक पाओ:",
-    "noReviewsChart": "अभी कोई रिव्यू नहीं"
+    "noReviewsChart": "अभी कोई रिव्यू नहीं",
+    "verifiedPurchase": "✓ Verified Purchase",
+    "telegramShare": "Telegram",
+    "instagramShare": "Instagram",
+    "instagramCopied": "Link copy हो गया! Instagram में paste करें।"
   },
   "review": {
     "addTitle": "रिव्यू जोड़ें",
@@ -110,7 +115,8 @@
     "errorCheckbox": "कृपया honest review checkbox चेक करें",
     "errorInvoice": "कृपया invoice/screenshot ज़रूर अपलोड करें",
     "errorLogin": "कृपया लॉगिन करें",
-    "errorDuplicate": "आपने इस प्रोडक्ट पर पहले ही रिव्यू दिया है।"
+    "errorDuplicate": "आपने इस प्रोडक्ट पर पहले ही रिव्यू दिया है।",
+    "errorSpam": "आपने पिछले 24 घंटे में 3 रिव्यू दे दिए हैं। कृपया कुछ देर बाद try करें।"
   },
   "compare": {
     "title": "Products तुलना",
@@ -135,7 +141,11 @@
     "walletLabel": "Wallet: {amount}",
     "user": "यूज़र",
     "noEarners": "अभी कोई earner नहीं",
-    "noReviewers": "अभी कोई reviewer नहीं"
+    "noReviewers": "अभी कोई reviewer नहीं",
+    "topReferrers": "🤝 Top Referrers",
+    "mostReferrals": "सबसे ज़्यादा referral लाने वाले",
+    "referralsLabel": "{count} referrals",
+    "noReferrers": "अभी कोई referrer नहीं"
   },
   "dashboard": {
     "titlePage": "मेरा Dashboard",
@@ -153,6 +163,13 @@
     "withdrawNote": "Admin manually process करेगा। UPI + PAN verify होगा।",
     "panRequired": "PAN Number (required)",
     "upiId": "UPI ID",
+    "withdrawAmount": "Amount (₹)",
+    "withdrawBankAccount": "Bank Account Number",
+    "withdrawBankIFSC": "IFSC Code",
+    "withdrawPending": "Withdrawal Pending",
+    "withdrawPendingDesc": "₹{amount} की request review हो रही है",
+    "withdrawNewRequest": "नई Request",
+    "withdrawError": "Error — balance चेक करें और दोबारा try करें",
     "withdrawSubmit": "Withdraw Request भेजें",
     "withdrawSuccess": "✓ Request sent! Admin contact करेगा।",
     "referralTitle": "रेफरल से कमाएं",
@@ -164,6 +181,10 @@
     "statusConfirmed": "Confirmed",
     "statusPaidOut": "Paid Out",
     "noCommission": "अभी कोई commission नहीं। अपने reviews share करें!",
+    "wishlistLink": "मेरी Wishlist",
+    "submitDealLink": "Deal Submit करें",
+    "premiumLink": "Premium ✨",
+    "notifPrefsLink": "🔔 Notification Preferences",
     "profileSettings": "⚙️ Profile Settings",
     "myReviews": "मेरे Reviews",
     "noReviewsMsg": "अभी कोई review नहीं",
@@ -184,6 +205,43 @@
     "save": "Save करें",
     "saving": "Saving...",
     "saved": "✓ Saved!"
+  },
+  "checkin": {
+    "title": "Daily Check-in",
+    "subtitle": "रोज़ check-in करो और wallet rewards पाओ",
+    "streak": "{days} दिन की streak 🔥",
+    "todayReward": "आज: ₹{amount}",
+    "checkIn": "Check In करें",
+    "checkedIn": "Check In हो गया ✓",
+    "nextCheckin": "कल वापस आएं!",
+    "nextTier": "{days} और दिन → ₹{amount}/दिन"
+  },
+  "referralTier": {
+    "title": "Referral Tier",
+    "referredCount": "{count} लोगों को refer किया",
+    "bonusPerReferral": "₹{amount} per referral",
+    "progressTo": "{tier} के लिए {count} और चाहिए",
+    "atMax": "Maximum tier! 💎",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Gold",
+    "platinum": "Platinum"
+  },
+  "wishlist": {
+    "save": "Save करें",
+    "saved": "सहेजा ✓",
+    "remove": "हटाएं",
+    "title": "मेरी Wishlist",
+    "empty": "Wishlist खाली है",
+    "emptyDesc": "Products save करें जो आप बाद में review करना चाहते हैं।",
+    "browseCta": "Products देखें",
+    "viewDeal": "Deal देखें",
+    "navLink": "Wishlist"
+  },
+  "socialProof": {
+    "viewedToday": "{count} ने आज देखा",
+    "savedThis": "{count} ने save किया",
+    "verifiedBuyers": "{count} verified buyers"
   },
   "qa": {
     "title": "Reviewer से पूछें",
@@ -214,6 +272,18 @@
     "endsIn": "खत्म होगा",
     "expired": "समाप्त"
   },
+  "notifications": {
+    "title": "Notification Preferences",
+    "pushNote": "इन settings से आप control कर सकते हैं कि कौन से push notifications मिलें।",
+    "walletCredit": "Wallet Credit",
+    "walletCreditDesc": "जब wallet में cashback या bonus जुड़े",
+    "withdrawalUpdate": "Withdrawal Update",
+    "withdrawalUpdateDesc": "जब withdrawal approve, paid या reject हो",
+    "priceDrop": "Price Drop Alert",
+    "priceDropDesc": "जब save किया प्रोडक्ट target price पर आए",
+    "save": "Preferences Save करें",
+    "saved": "Saved!"
+  },
   "admin": {
     "pendingReviews": "पेंडिंग रिव्यू",
     "approve": "अप्रूव करें",
@@ -223,5 +293,20 @@
     "commissions": "कमीशन",
     "analytics": "एनालिटिक्स",
     "users": "यूज़र"
+  },
+  "deals": {
+    "title": "कम्युनिटी डील सबमिट करें",
+    "submitBtn": "डील सबमिट करें",
+    "submitting": "सबमिट हो रहा है...",
+    "success": "डील सबमिट हो गई!",
+    "successDesc": "आपकी डील review में है। अप्रूव होने पर catalog में जोड़ी जाएगी।",
+    "productName": "प्रोडक्ट का नाम",
+    "productUrl": "प्रोडक्ट URL",
+    "price": "कीमत (₹)",
+    "category": "श्रेणी",
+    "imageUrl": "इमेज URL (वैकल्पिक)",
+    "description": "विवरण (वैकल्पिक)",
+    "descPlaceholder": "कम्युनिटी को बताएं यह एक अच्छी डील क्यों है...",
+    "loginRequired": "डील सबमिट करने के लिए लॉगिन करें"
   }
 }

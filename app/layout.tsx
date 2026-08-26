@@ -7,6 +7,7 @@ import { getSiteSettings } from '@/lib/settings'
 import Link from 'next/link'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages, getTranslations } from 'next-intl/server'
+import OneSignalInit from '@/components/OneSignalInit'
 
 export const dynamic = 'force-dynamic'
 
@@ -51,6 +52,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className={`${jakarta.variable} font-sans bg-white min-h-screen antialiased`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
+        <OneSignalInit />
         <Providers>
           <Navbar siteName={settings.siteName} brandColor={brand} />
 

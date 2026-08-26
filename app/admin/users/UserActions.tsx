@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Ban, CheckCircle } from 'lucide-react'
+import { Ban, CheckCircle, Loader2 } from 'lucide-react'
 
 export default function UserActions({ userId, isBlocked }: { userId: string; isBlocked: boolean }) {
   const supabase = createClient()
@@ -17,11 +17,22 @@ export default function UserActions({ userId, isBlocked }: { userId: string; isB
   }
 
   return (
-    <button onClick={toggle} disabled={loading}
-      className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition disabled:opacity-50 ${
-        isBlocked ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-600 hover:bg-red-200'
-      }`}>
-      {isBlocked ? <><CheckCircle className="w-3 h-3" />Unblock</> : <><Ban className="w-3 h-3" />Block</>}
+    <button
+      onClick={toggle}
+      disabled={loading}
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 ${
+        isBlocked
+          ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-100'
+          : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-100'
+      }`}
+    >
+      {loading ? (
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+      ) : isBlocked ? (
+        <><CheckCircle className="w-3.5 h-3.5" /> Unblock</>
+      ) : (
+        <><Ban className="w-3.5 h-3.5" /> Block</>
+      )}
     </button>
   )
 }

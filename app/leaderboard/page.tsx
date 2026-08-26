@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils'
-import { Trophy, Star } from 'lucide-react'
+import { Trophy, Star, Users } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -8,28 +8,34 @@ export const dynamic = 'force-dynamic'
 export default async function LeaderboardPage() {
   const [supabase, t] = await Promise.all([createClient(), getTranslations('leaderboard')])
 
-  const { data: topEarners } = await supabase
-    .from('profiles')
-    .select('id, name, wallet_balance, trust_score, referral_code')
-    .eq('is_blocked', false)
-    .order('wallet_balance', { ascending: false })
-    .limit(20)
-
-  const { data: topTrust } = await supabase
-    .from('profiles')
-    .select('id, name, trust_score, wallet_balance')
-    .eq('is_blocked', false)
-    .order('trust_score', { ascending: false })
-    .limit(20)
+  const [
+    { data: topEarners },
+    { data: topTrust },
+    { data: topReferrers },
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('id, name, wallet_balance, trust_score, referral_code')
+      .eq('is_blocked', false)
+      .order('wallet_balance', { ascending: false })
+      .limit(20),
+    supabase
+      .from('profiles')
+      .select('id, name, trust_score, wallet_balance')
+      .eq('is_blocked', false)
+      .order('trust_score', { ascending: false })
+      .limit(20),
+    supabase.rpc('get_top_referrers', { lim: 20 }),
+  ])
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-5xl mx-auto">
       <div className="flex items-center gap-3 mb-8">
         <Trophy className="w-7 h-7 text-yellow-500" />
         <h1 className="text-2xl font-bold text-gray-800">{t('title')}</h1>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-3 gap-6">
         {/* Top Earners */}
         <div className="bg-white rounded-2xl shadow overflow-hidden">
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-4">
@@ -84,6 +90,34 @@ export default async function LeaderboardPage() {
             ))}
             {(topTrust ?? []).length === 0 && (
               <p className="p-4 text-center text-gray-400 text-sm">{t('noReviewers')}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Top Referrers */}
+        <div className="bg-white rounded-2xl shadow overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-500 to-rose-500 p-4">
+            <h2 className="text-white font-bold flex items-center gap-2"><Users className="w-4 h-4" />{t('topReferrers')}</h2>
+            <p className="text-orange-100 text-xs">{t('mostReferrals')}</p>
+          </div>
+          <div className="divide-y">
+            {(topReferrers ?? []).map((user: { id: string; name: string; referral_count: number }, index: number) => (
+              <div key={user.id} className="flex items-center gap-3 px-4 py-3">
+                <span className={`text-lg font-bold w-6 text-center ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : index === 2 ? 'text-amber-600' : 'text-gray-300'}`}>
+                  {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`}
+                </span>
+                <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-sm flex-shrink-0">
+                  {(user.name ?? 'U').charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-800 truncate">{user.name ?? t('user')}</p>
+                  <p className="text-xs text-gray-400">{t('referralsLabel', { count: user.referral_count })}</p>
+                </div>
+                <span className="text-orange-500 font-bold text-sm">{user.referral_count}</span>
+              </div>
+            ))}
+            {(topReferrers ?? []).length === 0 && (
+              <p className="p-4 text-center text-gray-400 text-sm">{t('noReferrers')}</p>
             )}
           </div>
         </div>

@@ -56,6 +56,15 @@ export default function ReviewForm({ productId, onSuccess, onClose }: Props) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setError(t('errorLogin')); setLoading(false); return }
 
+    // Spam check: max 3 reviews per 24 hours
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const { count: recentCount } = await supabase
+      .from('reviews')
+      .select('*', { count: 'exact', head: true })
+      .eq('reviewer_id', user.id)
+      .gte('created_at', since)
+    if ((recentCount ?? 0) >= 3) { setError(t('errorSpam')); setLoading(false); return }
+
     const hash = await computeFileHash(invoiceFile)
     const { data: existing } = await supabase.from('reviews').select('id').eq('invoice_hash', hash).limit(1)
     const duplicate = (existing ?? []).length > 0

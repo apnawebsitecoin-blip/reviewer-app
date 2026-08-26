@@ -2,10 +2,11 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatCurrency, formatDate, getSentimentBg } from '@/lib/utils'
-import { Wallet, Star, MousePointerClick, TrendingUp, Share2 } from 'lucide-react'
+import { Wallet, Star, MousePointerClick, TrendingUp, Heart, Bell, ShoppingBag, Crown } from 'lucide-react'
 import WithdrawButton from './WithdrawButton'
-import CopyReferral from './CopyReferral'
 import VideoUploadForm from '@/components/VideoUploadForm'
+import CheckInButton from '@/components/CheckInButton'
+import ReferralTierCard from '@/components/ReferralTierCard'
 import { getTranslations } from 'next-intl/server'
 
 export const dynamic = 'force-dynamic'
@@ -18,22 +19,17 @@ export default async function DashboardPage() {
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
   if (!profile) redirect('/auth/login')
 
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select('*, products(id, name, category)')
-    .eq('reviewer_id', user.id)
-    .order('created_at', { ascending: false })
-
-  const { count: clickCount } = await supabase
-    .from('clicks')
-    .select('*', { count: 'exact', head: true })
-    .eq('reviewer_id', user.id)
-
-  const { data: commissions } = await supabase
-    .from('commissions')
-    .select('*')
-    .eq('reviewer_id', user.id)
-    .order('created_at', { ascending: false })
+  const [
+    { data: reviews },
+    { count: clickCount },
+    { data: commissions },
+    { count: referralCount },
+  ] = await Promise.all([
+    supabase.from('reviews').select('*, products(id, name, category)').eq('reviewer_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('clicks').select('*', { count: 'exact', head: true }).eq('reviewer_id', user.id),
+    supabase.from('commissions').select('*').eq('reviewer_id', user.id).order('created_at', { ascending: false }),
+    supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('referred_by', user.id),
+  ])
 
   const pendingEarnings   = (commissions ?? []).filter(c => c.status === 'pending').reduce((s, c) => s + c.reviewer_share, 0)
   const confirmedEarnings = (commissions ?? []).filter(c => c.status === 'confirmed').reduce((s, c) => s + c.reviewer_share, 0)
@@ -69,17 +65,17 @@ export default async function DashboardPage() {
               <p className="text-xs text-orange-500 mt-1">{t('withdrawMin')}</p>
             )}
           </div>
-          <WithdrawButton walletBalance={profile.wallet_balance} panNumber={profile.pan_number} userId={user.id} />
+          <WithdrawButton walletBalance={profile.wallet_balance} panNumber={profile.pan_number} upiId={profile.upi_id} userId={user.id} />
         </div>
       </div>
 
+      {/* Daily Check-in */}
+      <CheckInButton userId={user.id} />
+
       <VideoUploadForm />
 
-      <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-5 mb-6">
-        <h2 className="font-bold text-indigo-800 mb-2 flex items-center gap-2"><Share2 className="w-4 h-4" />{t('referralTitle')}</h2>
-        <p className="text-xs text-indigo-600 mb-3">{t('referralDesc')}</p>
-        <CopyReferral code={profile.referral_code ?? ''} />
-      </div>
+      {/* Referral Tier Card */}
+      <ReferralTierCard referralCount={referralCount ?? 0} referralCode={profile.referral_code ?? ''} />
 
       {expertCategories.length > 0 && (
         <div className="bg-white rounded-2xl shadow p-5 mb-6">
@@ -116,7 +112,19 @@ export default async function DashboardPage() {
       </div>
 
       <div className="bg-white rounded-2xl shadow p-5">
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end gap-4 mb-2">
+          <Link href="/dashboard/wishlist" className="text-sm text-pink-500 hover:underline flex items-center gap-1">
+            <Heart className="w-3.5 h-3.5" />{t('wishlistLink')}
+          </Link>
+          <Link href="/dashboard/submit-deal" className="text-sm text-green-600 hover:underline flex items-center gap-1">
+            <ShoppingBag className="w-3.5 h-3.5" />{t('submitDealLink')}
+          </Link>
+          <Link href="/pricing" className="text-sm text-amber-600 hover:underline flex items-center gap-1">
+            <Crown className="w-3.5 h-3.5" />{t('premiumLink')}
+          </Link>
+          <Link href="/dashboard/notification-preferences" className="text-sm text-indigo-500 hover:underline flex items-center gap-1">
+            <Bell className="w-3.5 h-3.5" />{t('notifPrefsLink')}
+          </Link>
           <Link href="/dashboard/profile" className="text-sm text-indigo-600 hover:underline flex items-center gap-1">
             {t('profileSettings')}
           </Link>

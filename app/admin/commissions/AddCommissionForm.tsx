@@ -2,7 +2,10 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, Plus } from 'lucide-react'
+import { ChevronDown, ChevronUp, Plus, Loader2 } from 'lucide-react'
+
+const INPUT = 'w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition bg-white'
+const LABEL = 'block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5'
 
 interface Click {
   id: string
@@ -48,19 +51,32 @@ export default function AddCommissionForm({ clicks }: { clicks: Click[] }) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow overflow-hidden">
-      <button onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50">
-        <span className="font-semibold text-gray-800 flex items-center gap-2"><Plus className="w-4 h-4 text-indigo-600" />नया Commission Record जोड़ें</span>
-        <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} />
+    <div className="bg-white rounded-xl border border-gray-100 shadow-[0_1px_4px_rgba(0,0,0,0.07)] overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 bg-indigo-50 rounded-lg flex items-center justify-center">
+            <Plus className="w-4 h-4 text-indigo-600" />
+          </div>
+          <span className="text-sm font-bold text-gray-800">Naya Commission Record Jodo</span>
+        </div>
+        {open ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
       </button>
+
       {open && (
-        <form onSubmit={handleSubmit} className="p-5 pt-0 border-t space-y-4">
+        <form onSubmit={handleSubmit} className="border-t border-gray-100 p-5 space-y-4">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Click Select करें</label>
-            <select value={form.click_id} onChange={e => setForm(p => ({ ...p, click_id: e.target.value }))} required
-              className="w-full border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
-              <option value="">-- Click चुनें --</option>
+            <label className={LABEL}>Click Select Karo</label>
+            <select
+              value={form.click_id}
+              onChange={e => setForm(p => ({ ...p, click_id: e.target.value }))}
+              required
+              className={INPUT}
+            >
+              <option value="">-- Click Chuno --</option>
               {clicks.map(c => (
                 <option key={c.id} value={c.id}>
                   {(c.products as any)?.name ?? c.product_id} — {(c.profiles as any)?.name ?? c.reviewer_id} — {new Date(c.clicked_at).toLocaleString('en-IN')}
@@ -68,28 +84,54 @@ export default function AddCommissionForm({ clicks }: { clicks: Click[] }) {
               ))}
             </select>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Sale Amount (₹)</label>
-              <input type="number" required value={form.sale_amount} onChange={e => setForm(p => ({ ...p, sale_amount: e.target.value }))}
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <label className={LABEL}>Sale Amount (₹)</label>
+              <input
+                type="number"
+                required
+                value={form.sale_amount}
+                onChange={e => setForm(p => ({ ...p, sale_amount: e.target.value }))}
+                className={INPUT}
+              />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Network Commission (₹)</label>
-              <input type="number" required value={form.total_commission} onChange={e => setForm(p => ({ ...p, total_commission: e.target.value }))}
-                className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <label className={LABEL}>Network Commission (₹)</label>
+              <input
+                type="number"
+                required
+                value={form.total_commission}
+                onChange={e => setForm(p => ({ ...p, total_commission: e.target.value }))}
+                className={INPUT}
+              />
             </div>
           </div>
+
           {totalComm > 0 && (
-            <div className="bg-gray-50 rounded-xl p-3 text-sm space-y-1">
-              <p className="text-green-600">Reviewer (60%): ₹{reviewerShare.toFixed(2)}</p>
-              <p className="text-indigo-600">Platform (40%): ₹{platformShare.toFixed(2)}</p>
-              <p className="text-blue-500">Buyer cashback (10% of platform): ₹{buyerShare.toFixed(2)}</p>
+            <div className="bg-gray-50 rounded-xl p-4 space-y-1.5">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Commission Breakdown</p>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Reviewer (60%)</span>
+                <span className="font-semibold text-emerald-600">₹{reviewerShare.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Platform (40%)</span>
+                <span className="font-semibold text-indigo-600">₹{platformShare.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-gray-600">Buyer Cashback (10% of platform)</span>
+                <span className="font-semibold text-blue-500">₹{buyerShare.toFixed(2)}</span>
+              </div>
             </div>
           )}
-          <button type="submit" disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-60">
-            {loading ? 'जोड़ा जा रहा है...' : 'Commission Record जोड़ें'}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex items-center justify-center gap-2 w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-2.5 rounded-lg transition-colors disabled:opacity-60"
+          >
+            {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Jod raha hai…</> : <><Plus className="w-4 h-4" /> Commission Record Jodo</>}
           </button>
         </form>
       )}

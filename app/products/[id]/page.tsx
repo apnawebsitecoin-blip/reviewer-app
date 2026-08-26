@@ -5,6 +5,7 @@ import ProductDetailClient from './ProductDetailClient'
 import { ClientSentimentChart, ClientQASection, ClientPriceHistoryChart } from './ClientComponents'
 import CouponSection from '@/components/CouponSection'
 import VideoReviewsSection from '@/components/VideoReviewsSection'
+import SocialProofWidget from '@/components/SocialProofWidget'
 import { formatCurrency, formatDate, getSentimentBg } from '@/lib/utils'
 import { getSiteSettings } from '@/lib/settings'
 import { getTranslations } from 'next-intl/server'
@@ -19,36 +20,33 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const { data: product } = await supabase.from('products').select('*').eq('id', id).single()
   if (!product) notFound()
 
-  const { data: reviews } = await supabase
-    .from('reviews')
-    .select('*, profiles(id, name, trust_score)')
-    .eq('product_id', id)
-    .eq('verified', true)
-    .order('created_at', { ascending: false })
+  const [
+    { data: reviews },
+    { data: { user } },
+    { data: videoRows },
+    { data: allCoupons },
+    { count: wishlistCount },
+    { count: todayViews },
+  ] = await Promise.all([
+    supabase.from('reviews').select('*, profiles(id, name, trust_score)').eq('product_id', id).eq('verified', true).order('created_at', { ascending: false }),
+    supabase.auth.getUser(),
+    supabase.from('video_reviews').select('*, profiles(name)').eq('product_id', id).eq('status', 'live').order('created_at', { ascending: false }),
+    supabase.from('coupons').select('*').eq('is_active', true).order('created_at', { ascending: false }),
+    supabase.from('wishlists').select('*', { count: 'exact', head: true }).eq('product_id', id),
+    supabase.from('clicks').select('*', { count: 'exact', head: true }).eq('product_id', id).gte('clicked_at', new Date(Date.now() - 86400000).toISOString()),
+  ])
+
+  const { data: wishlistRow } = user
+    ? await supabase.from('wishlists').select('id').eq('user_id', user.id).eq('product_id', id).maybeSingle()
+    : { data: null }
+  const initialWishlisted = !!wishlistRow
 
   const verifiedReviews = reviews ?? []
-
   const positive = verifiedReviews.filter(r => r.sentiment === 'positive').length
-  const neutral = verifiedReviews.filter(r => r.sentiment === 'neutral').length
+  const neutral  = verifiedReviews.filter(r => r.sentiment === 'neutral').length
   const negative = verifiedReviews.filter(r => r.sentiment === 'negative').length
 
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // Video reviews
-  const { data: videoRows } = await supabase
-    .from('video_reviews')
-    .select('*, profiles(name)')
-    .eq('product_id', id)
-    .eq('status', 'live')
-    .order('created_at', { ascending: false })
   const videoReviews: VideoReview[] = (videoRows as VideoReview[]) ?? []
-
-  // Fetch all active coupons once, filter in JS (table is small)
-  const { data: allCoupons } = await supabase
-    .from('coupons')
-    .select('*')
-    .eq('is_active', true)
-    .order('created_at', { ascending: false })
 
   const now = new Date()
   const coupons: Coupon[] = (allCoupons ?? []).filter((c: Coupon) => {
@@ -79,13 +77,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               {product.price && <p className="text-2xl font-bold text-indigo-600 mt-2">{formatCurrency(product.price)}</p>}
             </div>
 
+            <SocialProofWidget
+              viewCount={todayViews ?? 0}
+              wishlistCount={wishlistCount ?? 0}
+              reviewCount={verifiedReviews.length}
+            />
+
             {settings.featureFlags?.showCoupons !== false && coupons.length > 0 && <CouponSection coupons={coupons} />}
 
-            <p className="text-xs text-gray-400 mt-3 italic">
-              {t('affiliateDisclosure')}
-            </p>
+            <p className="text-xs text-gray-400 mt-3 italic">{t('affiliateDisclosure')}</p>
 
-            <ProductDetailClient product={product} user={user} />
+            <ProductDetailClient product={product} user={user} initialWishlisted={initialWishlisted} />
 
             {settings.featureFlags?.showPriceHistory !== false && product.price && (
               <ClientPriceHistoryChart productId={product.id} currentPrice={product.price} />
@@ -112,8 +114,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                         {((review.profiles as any)?.name ?? 'U').charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-medium text-gray-800">{(review.profiles as any)?.name ?? t('anonymous')}</span>
+                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">{t('verifiedPurchase')}</span>
                           {review.detailed_badge && (
                             <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{t('detailedBadge')}</span>
                           )}
