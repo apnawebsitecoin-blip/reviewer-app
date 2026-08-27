@@ -3,8 +3,9 @@
 import { useRef, useState, useCallback } from 'react'
 import {
   Upload, Download, FileSpreadsheet, CheckCircle2,
-  AlertCircle, X, ChevronDown, ChevronUp, Loader2,
+  AlertCircle, X, ChevronDown, ChevronUp, Loader2, Link2,
 } from 'lucide-react'
+import LinkFetch from './LinkFetch'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -151,6 +152,7 @@ function chunk<T>(arr: T[], size: number): T[][] {
 
 export default function BulkUpload() {
   const [open, setOpen] = useState(false)
+  const [mode, setMode] = useState<'csv' | 'links'>('csv')
   const [phase, setPhase] = useState<Phase>('idle')
   const [fileName, setFileName] = useState('')
   const [allRows, setAllRows] = useState<RawRow[]>([])
@@ -313,7 +315,42 @@ export default function BulkUpload() {
       </button>
 
       {open && (
-        <div className="border-t border-gray-100 px-5 py-5">
+        <div className="border-t border-gray-100">
+          {/* Mode tabs */}
+          <div className="flex border-b border-gray-100">
+            <button
+              type="button"
+              onClick={() => setMode('csv')}
+              className={`px-5 py-3 text-sm font-semibold flex items-center gap-2 transition-colors border-b-2 ${
+                mode === 'csv'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <FileSpreadsheet className="w-4 h-4" /> CSV / Excel
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('links')}
+              className={`px-5 py-3 text-sm font-semibold flex items-center gap-2 transition-colors border-b-2 ${
+                mode === 'links'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Link2 className="w-4 h-4" /> Add via Links
+            </button>
+          </div>
+
+          {/* Links mode */}
+          {mode === 'links' && (
+            <div className="px-5 py-5">
+              <LinkFetch />
+            </div>
+          )}
+
+          {/* CSV mode */}
+          {mode === 'csv' && <div className="px-5 py-5">
 
           {/* ── IDLE phase ── */}
           {phase === 'idle' && (
@@ -566,6 +603,7 @@ export default function BulkUpload() {
             </div>
           )}
 
+          </div>} {/* end CSV mode */}
         </div>
       )}
     </div>
