@@ -5,6 +5,8 @@ import { TrendingUp, Star, ChevronRight } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import PromoBanner from '@/components/PromoBanner'
 import FlashDealsSection from '@/components/FlashDealsSection'
+import HeroSection from '@/components/HeroSection'
+import TiltWrapper from '@/components/TiltWrapper'
 import { getSiteSettings } from '@/lib/settings'
 import { getIcon } from '@/lib/icons'
 import { getTranslations } from 'next-intl/server'
@@ -70,7 +72,10 @@ export default async function HomePage() {
   const brand = settings.brandColor
 
   return (
-    <div>
+    <div className="pb-20 md:pb-0">
+      {/* ══ 0. HERO SECTION ══ */}
+      <HeroSection brand={brand} />
+
       {/* ══ 1. PROMO BANNER ══ */}
       <div className="-mx-4 sm:-mx-6 mb-8">
         <PromoBanner banners={settings.banners} />
@@ -245,7 +250,11 @@ function ProductSection({ title, icon, products, brand, viewAllLabel }: {
     <section className="mb-10">
       <SectionHeader title={title} href="/products" icon={icon} brand={brand} viewAllLabel={viewAllLabel} />
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-        {products.map(p => <ProductCard key={p.id} product={p} brand={brand} />)}
+        {products.map(p => (
+          <TiltWrapper key={p.id}>
+            <ProductCard product={p} brand={brand} />
+          </TiltWrapper>
+        ))}
       </div>
     </section>
   )

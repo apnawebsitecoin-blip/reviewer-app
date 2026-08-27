@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages, getTranslations } from 'next-intl/server'
 import OneSignalInit from '@/components/OneSignalInit'
+import BottomNav from '@/components/BottomNav'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,9 +68,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </a>
           )}
 
-          <main className="max-w-7xl mx-auto px-4 sm:px-6">
+          <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-20 md:pb-0">
             {children}
           </main>
+          <BottomNav />
 
           {/* Dark footer — content from settings */}
           <footer className="bg-gray-900 mt-16">
