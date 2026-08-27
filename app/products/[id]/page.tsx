@@ -2,11 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import ProductDetailClient from './ProductDetailClient'
+import AnimatedReviewList from './AnimatedReviewList'
 import { ClientSentimentChart, ClientQASection, ClientPriceHistoryChart } from './ClientComponents'
 import CouponSection from '@/components/CouponSection'
 import VideoReviewsSection from '@/components/VideoReviewsSection'
 import SocialProofWidget from '@/components/SocialProofWidget'
-import { formatCurrency, formatDate, getSentimentBg } from '@/lib/utils'
+import { formatCurrency, getSentimentBg } from '@/lib/utils'
 import { getSiteSettings } from '@/lib/settings'
 import { getTranslations } from 'next-intl/server'
 import type { Coupon, VideoReview } from '@/lib/types'
@@ -56,102 +57,135 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     return true
   })
 
+  const brand = settings.brandColor
+
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-2xl shadow overflow-hidden">
-        <div className="md:flex">
-          <div className="relative md:w-80 h-64 md:h-auto bg-gray-100 flex-shrink-0">
+    <div className="max-w-4xl mx-auto space-y-6">
+
+      {/* ── Product Hero Card ── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="md:grid md:grid-cols-[380px_1fr]">
+
+          {/* Image */}
+          <div className="relative aspect-square bg-gray-50 flex-shrink-0">
             {product.image_url ? (
-              <Image src={product.image_url} alt={product.name} fill className="object-cover" unoptimized />
+              <Image
+                src={product.image_url}
+                alt={product.name}
+                fill
+                className="object-cover"
+                unoptimized
+                priority
+              />
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-200 text-6xl">📦</div>
+              <div className="w-full h-full flex items-center justify-center text-7xl text-gray-200">📦</div>
+            )}
+
+            {/* Platform pill */}
+            {product.platform && (
+              <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm text-[11px] font-bold text-gray-700 px-2.5 py-1 rounded-full shadow-sm border border-white/60">
+                {product.platform}
+              </span>
+            )}
+
+            {/* Featured / Sponsored badges */}
+            {(product.is_featured || product.is_sponsored) && (
+              <div className="absolute top-3 right-3 flex flex-col gap-1.5">
+                {product.is_featured && (
+                  <span className="bg-amber-400 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">
+                    ★ Featured
+                  </span>
+                )}
+                {product.is_sponsored && (
+                  <span className="bg-sky-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">
+                    Sponsored
+                  </span>
+                )}
+              </div>
             )}
           </div>
-          <div className="p-6 flex-1">
-            <div>
-              {product.category && (
-                <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full capitalize">{product.category}</span>
-              )}
-              <h1 className="text-xl font-bold text-gray-800 mt-2">{product.name}</h1>
-              {product.platform && <p className="text-sm text-gray-400 capitalize mt-1">{product.platform}</p>}
-              {product.price && <p className="text-2xl font-bold text-indigo-600 mt-2">{formatCurrency(product.price)}</p>}
+
+          {/* Info panel */}
+          <div className="p-6 md:p-8 flex flex-col gap-4">
+
+            {/* Category */}
+            {product.category && (
+              <span
+                className="inline-flex self-start text-[11px] font-black uppercase tracking-widest px-3 py-1 rounded-full animate-fsu"
+                style={{ background: brand + '18', color: brand }}
+              >
+                {product.category}
+              </span>
+            )}
+
+            {/* Product name */}
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-gray-900 leading-tight animate-fsu-1">
+              {product.name}
+            </h1>
+
+            {/* Price */}
+            {product.price ? (
+              <p className="text-3xl font-black animate-fsu-2" style={{ color: brand }}>
+                {formatCurrency(product.price)}
+              </p>
+            ) : null}
+
+            {/* Social proof */}
+            <div className="animate-fsu-3">
+              <SocialProofWidget
+                viewCount={todayViews ?? 0}
+                wishlistCount={wishlistCount ?? 0}
+                reviewCount={verifiedReviews.length}
+              />
             </div>
 
-            <SocialProofWidget
-              viewCount={todayViews ?? 0}
-              wishlistCount={wishlistCount ?? 0}
-              reviewCount={verifiedReviews.length}
+            {/* Coupons */}
+            {settings.featureFlags?.showCoupons !== false && coupons.length > 0 && (
+              <CouponSection coupons={coupons} />
+            )}
+
+            {/* Affiliate note */}
+            <p className="text-[11px] text-gray-400 italic -mt-1">{t('affiliateDisclosure')}</p>
+
+            {/* Action buttons */}
+            <ProductDetailClient
+              product={product}
+              user={user}
+              initialWishlisted={initialWishlisted}
+              brand={brand}
             />
 
-            {settings.featureFlags?.showCoupons !== false && coupons.length > 0 && <CouponSection coupons={coupons} />}
-
-            <p className="text-xs text-gray-400 mt-3 italic">{t('affiliateDisclosure')}</p>
-
-            <ProductDetailClient product={product} user={user} initialWishlisted={initialWishlisted} />
-
+            {/* Price history */}
             {settings.featureFlags?.showPriceHistory !== false && product.price && (
               <ClientPriceHistoryChart productId={product.id} currentPrice={product.price} />
             )}
           </div>
         </div>
-
-        <div className="p-6 border-t">
-          <h2 className="font-bold text-gray-800 mb-4 text-lg">
-            {t('reviewsCount', { count: verifiedReviews.length })}
-          </h2>
-
-          <ClientSentimentChart positive={positive} neutral={neutral} negative={negative} />
-
-          <div className="mt-6 space-y-4">
-            {verifiedReviews.length === 0 ? (
-              <p className="text-gray-400 text-sm text-center py-8">{t('noReviews')}</p>
-            ) : (
-              verifiedReviews.map(review => (
-                <div key={review.id} className="border rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-sm">
-                        {((review.profiles as any)?.name ?? 'U').charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-gray-800">{(review.profiles as any)?.name ?? t('anonymous')}</span>
-                          <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">{t('verifiedPurchase')}</span>
-                          {review.detailed_badge && (
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{t('detailedBadge')}</span>
-                          )}
-                          {(review.profiles as any)?.trust_score >= 5 && (
-                            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">{t('trustedBadge')}</span>
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-400">{formatDate(review.created_at)}</span>
-                      </div>
-                    </div>
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${getSentimentBg(review.sentiment)}`}>
-                      {review.sentiment === 'positive' ? t('positive') : review.sentiment === 'negative' ? t('negative') : t('neutral')}
-                    </span>
-                  </div>
-                  {review.review_text && <p className="text-sm text-gray-600">{review.review_text}</p>}
-                  {review.later_returned && (
-                    <p className="text-xs text-orange-500 mt-2 italic">{t('returnedWarning')}</p>
-                  )}
-                  {review.media_url && (
-                    <a href={review.media_url} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-indigo-500 hover:underline mt-2 block">{t('viewProof')}</a>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {settings.featureFlags?.showVideoReviews !== false && videoReviews.length > 0 && (
-          <div className="p-6 border-t">
-            <VideoReviewsSection videos={videoReviews} />
-          </div>
-        )}
       </div>
 
+      {/* ── Reviews Card ── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-black text-gray-900 tracking-tight">
+            {t('reviewsCount', { count: verifiedReviews.length })}
+          </h2>
+        </div>
+
+        <ClientSentimentChart positive={positive} neutral={neutral} negative={negative} />
+
+        <div className="mt-6">
+          <AnimatedReviewList reviews={verifiedReviews} brand={brand} />
+        </div>
+      </div>
+
+      {/* ── Video Reviews ── */}
+      {settings.featureFlags?.showVideoReviews !== false && videoReviews.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+          <VideoReviewsSection videos={videoReviews} />
+        </div>
+      )}
+
+      {/* ── Q&A ── */}
       <ClientQASection productId={id} user={user} />
     </div>
   )

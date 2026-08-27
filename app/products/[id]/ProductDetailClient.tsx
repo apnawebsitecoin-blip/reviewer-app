@@ -13,9 +13,10 @@ interface Props {
   product: Product
   user: User | null
   initialWishlisted: boolean
+  brand: string
 }
 
-export default function ProductDetailClient({ product, user, initialWishlisted }: Props) {
+export default function ProductDetailClient({ product, user, initialWishlisted, brand }: Props) {
   const t = useTranslations('product')
   const router = useRouter()
   const supabase = createClient()
@@ -75,14 +76,20 @@ export default function ProductDetailClient({ product, user, initialWishlisted }
   return (
     <>
       <div className="flex flex-wrap gap-2 mt-4">
-        <button onClick={handleBuyNow}
-          className="flex items-center gap-2 bg-indigo-600 text-white px-5 py-2.5 rounded-xl hover:bg-indigo-700 font-semibold transition">
+        <button
+          onClick={handleBuyNow}
+          className="flex items-center gap-2 text-white px-5 py-2.5 rounded-xl font-bold transition hover:opacity-90 active:opacity-80 shadow-md"
+          style={{ backgroundColor: brand, boxShadow: `0 4px 14px ${brand}55` }}
+        >
           <ShoppingCart className="w-4 h-4" />{t('buyNow')}
         </button>
 
         {user && (
-          <button onClick={() => setShowReviewForm(true)}
-            className="flex items-center gap-2 border border-indigo-600 text-indigo-600 px-4 py-2.5 rounded-xl hover:bg-indigo-50 font-medium transition">
+          <button
+            onClick={() => setShowReviewForm(true)}
+            className="flex items-center gap-2 border px-4 py-2.5 rounded-xl font-semibold transition hover:opacity-80"
+            style={{ borderColor: brand, color: brand }}
+          >
             {t('addReview')}
           </button>
         )}

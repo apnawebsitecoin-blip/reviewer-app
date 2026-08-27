@@ -45,3 +45,14 @@ body {
 .animate-float  { animation: floatY  3.5s ease-in-out infinite; }
 .animate-float2 { animation: floatY2 4.2s ease-in-out infinite 0.8s; }
 .animate-float3 { animation: floatY  5s   ease-in-out infinite 1.6s; }
+
+/* Fade + slide-up entrance (for server-rendered sections) */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fsu   { animation: fadeSlideUp 0.45s ease-out both; }
+.animate-fsu-1 { animation: fadeSlideUp 0.45s ease-out 0.08s both; }
+.animate-fsu-2 { animation: fadeSlideUp 0.45s ease-out 0.16s both; }
+.animate-fsu-3 { animation: fadeSlideUp 0.45s ease-out 0.24s both; }
+.animate-fsu-4 { animation: fadeSlideUp 0.45s ease-out 0.32s both; }
