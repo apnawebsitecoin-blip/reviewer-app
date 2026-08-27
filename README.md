@@ -111,3 +111,7 @@ Key tables:
 | `supabase-schema.sql` | Full DB schema (run first) |
 | `fix-trigger.sql` | Trigger fix (if signup fails) |
 | `fix-signup-v2.sql` | RLS policy fix + INSERT policy |
+
+## Deployment
+
+Deployed on [Vercel](https://vercel.com) with automatic deploys on every push to `main`.
