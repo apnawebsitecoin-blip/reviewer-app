@@ -115,3 +115,5 @@ Key tables:
 ## Deployment
 
 Deployed on [Vercel](https://vercel.com) with automatic deploys on every push to `main`.
+
+Built with ❤️ by [apnawebsitecoin](https://github.com/apnawebsitecoin-blip)
