@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { Share2 } from 'lucide-react'
 import CopyReferral from '@/app/dashboard/CopyReferral'
+import AnimatedProgressBar from '@/components/AnimatedProgressBar'
 
 const TIERS = [
   { key: 'bronze',   min: 0,  bonus: 20, icon: '🥉', bg: 'bg-amber-50',   border: 'border-amber-200',  text: 'text-amber-700',  bar: 'bg-amber-400'  },
@@ -40,10 +41,8 @@ export default async function ReferralTierCard({ referralCount, referralCode }: 
         <span className={`text-xs font-bold ${current.text}`}>{t('bonusPerReferral', { amount: current.bonus })}</span>
       </div>
 
-      {/* Progress bar */}
-      <div className="h-2 bg-white/70 rounded-full overflow-hidden mb-2">
-        <div className={`h-full ${current.bar} rounded-full transition-all`} style={{ width: `${progress}%` }} />
-      </div>
+      {/* Progress bar — animated on scroll into view */}
+      <AnimatedProgressBar progress={progress} barClass={current.bar} />
 
       {next ? (
         <p className={`text-xs ${current.text} opacity-70`}>

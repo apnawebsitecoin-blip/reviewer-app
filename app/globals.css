@@ -56,3 +56,15 @@ body {
 .animate-fsu-2 { animation: fadeSlideUp 0.45s ease-out 0.16s both; }
 .animate-fsu-3 { animation: fadeSlideUp 0.45s ease-out 0.24s both; }
 .animate-fsu-4 { animation: fadeSlideUp 0.45s ease-out 0.32s both; }
+
+/* Auth page — slowly drifting brand blobs */
+@keyframes authBlob1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(40px, -35px) scale(1.1); }
+}
+@keyframes authBlob2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(-30px, 30px) scale(1.07); }
+}
+.auth-blob-1 { animation: authBlob1 10s ease-in-out infinite; }
+.auth-blob-2 { animation: authBlob2 13s ease-in-out infinite 2s; }

@@ -10,6 +10,7 @@ import TiltWrapper from '@/components/TiltWrapper'
 import { getSiteSettings } from '@/lib/settings'
 import { getIcon } from '@/lib/icons'
 import { getTranslations } from 'next-intl/server'
+import FadeInSection from '@/components/FadeInSection'
 
 export const dynamic = 'force-dynamic'
 
@@ -77,11 +78,12 @@ export default async function HomePage() {
       <HeroSection brand={brand} />
 
       {/* ══ 1. PROMO BANNER ══ */}
-      <div className="-mx-4 sm:-mx-6 mb-8">
+      <FadeInSection className="-mx-4 sm:-mx-6 mb-8">
         <PromoBanner banners={settings.banners} />
-      </div>
+      </FadeInSection>
 
       {/* ══ 2. TOP CATEGORIES (from settings) ══ */}
+      <FadeInSection delay={0.05}>
       <section className="mb-10">
         <SectionHeader title={t('topCategories')} href="/products" brand={brand} viewAllLabel={tCommon('viewAll')} />
         <div className="flex gap-5 sm:gap-6 overflow-x-auto no-scrollbar pb-2">
@@ -107,14 +109,18 @@ export default async function HomePage() {
           })}
         </div>
       </section>
+      </FadeInSection>
 
       {/* ══ 3. FLASH DEALS ══ */}
       {settings.featureFlags?.showFlashDeals !== false && (
-        <FlashDealsSection title={settings.sectionTitles?.flashDeals ?? '⚡ Flash Deals'} brand={brand} />
+        <FadeInSection delay={0.05}>
+          <FlashDealsSection title={settings.sectionTitles?.flashDeals ?? '⚡ Flash Deals'} brand={brand} />
+        </FadeInSection>
       )}
 
       {/* ══ 4. COLLECTIONS ══ */}
       {settings.featureFlags?.showCollections !== false && collections && collections.length > 0 && (
+        <FadeInSection delay={0.06}>
         <section className="mb-10">
           <SectionHeader title={settings.sectionTitles?.collections ?? 'Featured Collections'} href="/products" brand={brand} viewAllLabel={tCommon('viewAll')} />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -135,29 +141,35 @@ export default async function HomePage() {
             ))}
           </div>
         </section>
+        </FadeInSection>
       )}
 
       {/* ══ 5. TRENDING PRODUCTS ══ */}
-      <ProductSection
-        title={settings.sectionTitles?.trending ?? 'Trending Deals'}
-        icon={<TrendingUp className="w-4 h-4 text-rose-500" />}
-        products={trendingProducts}
-        brand={brand}
-        viewAllLabel={tCommon('viewAll')}
-      />
-
-      {/* ══ 6. MOST REVIEWED ══ */}
-      {mostReviewed.length > 0 && (
+      <FadeInSection delay={0.04}>
         <ProductSection
-          title={settings.sectionTitles?.mostReviewed ?? 'Most Reviewed'}
-          icon={<Star className="w-4 h-4 text-amber-500" />}
-          products={mostReviewed}
+          title={settings.sectionTitles?.trending ?? 'Trending Deals'}
+          icon={<TrendingUp className="w-4 h-4 text-rose-500" />}
+          products={trendingProducts}
           brand={brand}
           viewAllLabel={tCommon('viewAll')}
         />
+      </FadeInSection>
+
+      {/* ══ 6. MOST REVIEWED ══ */}
+      {mostReviewed.length > 0 && (
+        <FadeInSection delay={0.04}>
+          <ProductSection
+            title={settings.sectionTitles?.mostReviewed ?? 'Most Reviewed'}
+            icon={<Star className="w-4 h-4 text-amber-500" />}
+            products={mostReviewed}
+            brand={brand}
+            viewAllLabel={tCommon('viewAll')}
+          />
+        </FadeInSection>
       )}
 
-      {/* ══ 6. HOW IT WORKS (from settings) ══ */}
+      {/* ══ 7. HOW IT WORKS (from settings) ══ */}
+      <FadeInSection>
       <section className="mb-12 py-10 bg-gray-50 -mx-4 sm:-mx-6 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-xl font-bold text-gray-900 mb-8 text-center">
@@ -190,9 +202,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      </FadeInSection>
 
-      {/* ══ 7. REVIEWER CTA ══ */}
-      <div className="-mx-4 sm:-mx-6 mb-0">
+      {/* ══ 8. REVIEWER CTA ══ */}
+      <FadeInSection className="-mx-4 sm:-mx-6 mb-0">
         <div
           className="py-14 px-5 text-center"
           style={{ background: `linear-gradient(120deg, ${brand}ee, ${brand}bb)` }}
@@ -214,7 +227,7 @@ export default async function HomePage() {
             {t('earnCta')} <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
-      </div>
+      </FadeInSection>
     </div>
   )
 }
