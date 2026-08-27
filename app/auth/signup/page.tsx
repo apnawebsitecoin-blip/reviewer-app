@@ -7,6 +7,55 @@ import { ShoppingBag, Loader2, AlertCircle } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 
+// ── Module-level: stable component reference across renders ────────────────────
+interface FieldProps {
+  id: string
+  label: string
+  type?: string
+  value: string
+  onChange: (v: string) => void
+  required?: boolean
+  minLength?: number
+  placeholder?: string
+  uppercase?: boolean
+  focused: string | null
+  onFocus: (id: string) => void
+  onBlur: () => void
+  brand: string
+}
+
+function AuthField({
+  id, label, type = 'text', value, onChange, required = false,
+  minLength, placeholder, uppercase, focused, onFocus, onBlur, brand,
+}: FieldProps) {
+  const active = focused === id
+  return (
+    <div>
+      <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-widest">
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={e => onChange(uppercase ? e.target.value.toUpperCase() : e.target.value)}
+        onFocus={() => onFocus(id)}
+        onBlur={onBlur}
+        required={required}
+        minLength={minLength}
+        placeholder={placeholder}
+        style={{
+          borderColor: active ? brand : '#e5e7eb',
+          boxShadow:   active ? `0 0 0 3px ${brand}22` : 'none',
+          outline: 'none',
+          transition: 'border-color 0.2s, box-shadow 0.2s',
+        }}
+        className={`w-full border rounded-xl px-4 py-3 text-sm bg-gray-50 focus:bg-white ${uppercase ? 'uppercase' : ''}`}
+      />
+    </div>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function SignupPage() {
   const t = useTranslations('auth.signup')
   const supabase = createClient()
@@ -24,13 +73,6 @@ export default function SignupPage() {
     const b = getComputedStyle(document.documentElement).getPropertyValue('--brand').trim()
     if (b) setBrand(b)
   }, [])
-
-  const fieldStyle = (name: string): React.CSSProperties => ({
-    borderColor: focused === name ? brand : '#e5e7eb',
-    boxShadow:   focused === name ? `0 0 0 3px ${brand}22` : 'none',
-    outline: 'none',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
-  })
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,31 +127,7 @@ export default function SignupPage() {
     router.refresh()
   }
 
-  const Field = ({
-    id, label, type = 'text', value, onChange, required = false, minLength, placeholder, uppercase,
-  }: {
-    id: string; label: string; type?: string; value: string
-    onChange: (v: string) => void; required?: boolean; minLength?: number
-    placeholder?: string; uppercase?: boolean
-  }) => (
-    <div>
-      <label className="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-widest">
-        {label}
-      </label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(uppercase ? e.target.value.toUpperCase() : e.target.value)}
-        onFocus={() => setFocused(id)}
-        onBlur={() => setFocused(null)}
-        required={required}
-        minLength={minLength}
-        placeholder={placeholder}
-        style={fieldStyle(id)}
-        className={`w-full border rounded-xl px-4 py-3 text-sm bg-gray-50 focus:bg-white ${uppercase ? 'uppercase' : ''}`}
-      />
-    </div>
-  )
+  const fieldProps = { focused, onFocus: setFocused, onBlur: () => setFocused(null), brand }
 
   return (
     <div className="min-h-[calc(100vh-80px)] relative flex items-center justify-center py-12 overflow-hidden -mx-4 sm:-mx-6 px-4">
@@ -146,16 +164,17 @@ export default function SignupPage() {
         </div>
 
         <form onSubmit={handleSignup} className="space-y-4">
-          <Field id="name"     label={t('name')}     value={name}     onChange={setName}     required />
-          <Field id="email"    label={t('email')}    type="email"  value={email}    onChange={setEmail}    required />
-          <Field id="password" label={t('password')} type="password" value={password} onChange={setPassword} required minLength={6} />
-          <Field
+          <AuthField id="name"     label={t('name')}     value={name}     onChange={setName}     required {...fieldProps} />
+          <AuthField id="email"    label={t('email')}    type="email"     value={email}    onChange={setEmail}    required {...fieldProps} />
+          <AuthField id="password" label={t('password')} type="password"  value={password} onChange={setPassword} required minLength={6} {...fieldProps} />
+          <AuthField
             id="referral"
             label={t('referral')}
             value={referralCode}
             onChange={setReferralCode}
             placeholder={t('referralPlaceholder')}
             uppercase
+            {...fieldProps}
           />
 
           {error && (
@@ -175,10 +194,7 @@ export default function SignupPage() {
             whileHover={{ scale: loading ? 1 : 1.015 }}
             whileTap={{ scale: loading ? 1 : 0.96 }}
             className="w-full py-3.5 rounded-xl font-bold text-white text-sm disabled:opacity-60 mt-1"
-            style={{
-              background: brand,
-              boxShadow: `0 4px 16px ${brand}44`,
-            }}
+            style={{ background: brand, boxShadow: `0 4px 16px ${brand}44` }}
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
