@@ -72,6 +72,29 @@ function extractPrice(html: string, platform: string): number | null {
   return isNaN(n) ? null : n
 }
 
+// ── Title sanity check ────────────────────────────────────────────────────────
+// Returns true if the extracted title is clearly not a real product name.
+const BAD_TITLE_EXACT = new Set([
+  'amazon.in', 'amazon.com', 'flipkart.com', 'meesho.com', 'myntra.com',
+  'snapdeal.com', 'ajio.com', 'nykaa.com', 'jiomart.com', 'tata cliq',
+  'buy online', 'online shopping', 'shop online', 'best price', 'home',
+  'products', 'shop', 'welcome', 'just a moment', 'access denied',
+  '404', 'page not found', 'error', 'sign in', 'login', 'please wait',
+  'checking your browser', 'robot check',
+])
+// Bare domain pattern: optional www, letters/digits/hyphens, TLD
+const DOMAIN_RE = /^(www\.)?[a-z0-9-]+\.(in|com|co\.in|net|org|io|pk)(\s*[-|].*)?$/i
+
+function isBadTitle(name: string): boolean {
+  if (!name) return true
+  const lower = name.toLowerCase().trim()
+  if (BAD_TITLE_EXACT.has(lower)) return true
+  if (DOMAIN_RE.test(name)) return true
+  // Generic prefix checks (e.g. "Buy Online at Best Price")
+  const genericPrefixes = ['buy online', 'online shopping', 'shop online', 'just a moment', 'access denied']
+  return genericPrefixes.some(p => lower.startsWith(p))
+}
+
 // ── Route ──────────────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -118,6 +141,8 @@ export async function POST(req: NextRequest) {
     let name = extractMeta(html, 'og:title') ?? extractTitle(html) ?? ''
     // Strip " – Amazon.in" / " | Flipkart" suffixes
     name = name.replace(/\s*[-–|]\s*(Amazon\.in|Amazon\.com|Flipkart|Myntra|Meesho|Nykaa|AJIO|JioMart|Snapdeal)[^\n]*/gi, '').trim()
+    // Treat bare domain names or generic/blocked-page titles as empty
+    if (isBadTitle(name)) name = ''
 
     // Image
     let image_url = extractMeta(html, 'og:image') ?? ''
@@ -132,7 +157,11 @@ export async function POST(req: NextRequest) {
       ? (parseFloat(metaPrice.replace(/,/g, '')) || null)
       : extractPrice(html, platform)
 
-    return NextResponse.json({ original_url: url, platform, name, price, image_url, error: null })
+    const nameError = !name
+      ? 'Title fetch nahi hua — manually fill karo'
+      : null
+
+    return NextResponse.json({ original_url: url, platform, name, price, image_url, error: nameError })
   } catch (e: any) {
     const msg = e?.name === 'TimeoutError' ? 'Timed out after 12s' : (e?.message ?? 'Fetch failed')
     return empty(msg)

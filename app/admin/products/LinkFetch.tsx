@@ -267,6 +267,7 @@ export default function LinkFetch() {
                 <th className="px-3 py-2.5 w-24 text-left">Price ₹</th>
                 <th className="px-3 py-2.5 w-28 text-left">Category</th>
                 <th className="px-3 py-2.5 w-24 text-left">Platform</th>
+                <th className="px-3 py-2.5 w-36 text-left">Image URL</th>
                 <th className="px-3 py-2.5 w-10 text-center">OK?</th>
                 <th className="px-2 py-2.5 w-6"></th>
               </tr>
@@ -301,7 +302,14 @@ export default function LinkFetch() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={row.image_url} alt="" className="w-10 h-10 object-cover rounded-lg shadow-sm border border-gray-100" />
                       ) : (
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-lg">📦</div>
+                        <div
+                          className="w-10 h-10 bg-amber-50 border border-dashed border-amber-300 rounded-lg flex items-center justify-center p-0.5"
+                          title="No image found — manually add image URL in the row"
+                        >
+                          <span className="text-[8px] text-amber-500 font-bold text-center leading-tight">
+                            No image — add manually
+                          </span>
+                        </div>
                       )}
                     </td>
 
@@ -363,6 +371,20 @@ export default function LinkFetch() {
                           value={row.platform}
                           onChange={e => updateRow(row.id, 'platform', e.target.value)}
                           className="w-20 border-0 border-b border-transparent hover:border-gray-200 focus:border-indigo-400 text-xs bg-transparent py-0.5 focus:outline-none text-gray-800 transition-colors"
+                        />
+                      )}
+                    </td>
+
+                    {/* Image URL */}
+                    <td className="px-3 py-1.5">
+                      {isPending ? (
+                        <div className="h-4 bg-gray-200 rounded animate-pulse w-24" />
+                      ) : (
+                        <input
+                          value={row.image_url}
+                          onChange={e => updateRow(row.id, 'image_url', e.target.value)}
+                          className="w-32 border-0 border-b border-transparent hover:border-gray-200 focus:border-indigo-400 text-xs bg-transparent py-0.5 focus:outline-none text-gray-800 transition-colors"
+                          placeholder="Paste image URL…"
                         />
                       )}
                     </td>
