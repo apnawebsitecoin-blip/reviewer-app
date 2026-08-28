@@ -19,6 +19,7 @@ interface FetchedRow {
   image_url: string
   fetchStatus: FetchStatus
   fetchError?: string
+  imageError?: string
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -108,6 +109,7 @@ export default function LinkFetch() {
                         : hasName ? 'partial'
                         : 'error',
             fetchError:  data.error ?? undefined,
+            imageError:  data.image_error ?? undefined,
           }))
         } catch {
           setRows(prev => prev.map(r =>
@@ -380,12 +382,19 @@ export default function LinkFetch() {
                       {isPending ? (
                         <div className="h-4 bg-gray-200 rounded animate-pulse w-24" />
                       ) : (
-                        <input
-                          value={row.image_url}
-                          onChange={e => updateRow(row.id, 'image_url', e.target.value)}
-                          className="w-32 border-0 border-b border-transparent hover:border-gray-200 focus:border-indigo-400 text-xs bg-transparent py-0.5 focus:outline-none text-gray-800 transition-colors"
-                          placeholder="Paste image URL…"
-                        />
+                        <>
+                          <input
+                            value={row.image_url}
+                            onChange={e => updateRow(row.id, 'image_url', e.target.value)}
+                            className="w-32 border-0 border-b border-transparent hover:border-gray-200 focus:border-indigo-400 text-xs bg-transparent py-0.5 focus:outline-none text-gray-800 transition-colors"
+                            placeholder="Paste image URL…"
+                          />
+                          {!row.image_url && row.imageError && (
+                            <p className="text-[9px] text-amber-500 leading-tight mt-0.5 max-w-[130px]" title={row.imageError}>
+                              ⚠ {row.imageError}
+                            </p>
+                          )}
+                        </>
                       )}
                     </td>
 

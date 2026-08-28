@@ -20,9 +20,10 @@ export default function SubmitDealPage() {
   const router = useRouter()
 
   const [mode, setMode]           = useState<Mode>('link')
-  const [linkUrl, setLinkUrl]     = useState('')
-  const [linkPhase, setLinkPhase] = useState<LinkPhase>('idle')
+  const [linkUrl, setLinkUrl]       = useState('')
+  const [linkPhase, setLinkPhase]   = useState<LinkPhase>('idle')
   const [fetchError, setFetchError] = useState('')
+  const [imageError, setImageError] = useState('')
 
   const [productName, setProductName]   = useState('')
   const [productUrl, setProductUrl]     = useState('')
@@ -52,6 +53,7 @@ export default function SubmitDealPage() {
       setImageUrl(data.image_url ?? '')
       setLinkPhase('ready')
       if (data.error) setFetchError(data.error)
+      if (data.image_error) setImageError(data.image_error)
     } catch {
       setFetchError('Network error — manually fill karo')
       setProductUrl(linkUrl)
@@ -82,7 +84,7 @@ export default function SubmitDealPage() {
   }
 
   const reset = () => {
-    setMode('link'); setLinkUrl(''); setLinkPhase('idle'); setFetchError('')
+    setMode('link'); setLinkUrl(''); setLinkPhase('idle'); setFetchError(''); setImageError('')
     setProductName(''); setProductUrl(''); setPrice(''); setCategory('')
     setImageUrl(''); setDescription(''); setSuccess(false); setSubmitError('')
   }
@@ -296,10 +298,18 @@ export default function SubmitDealPage() {
               <input
                 type="url"
                 value={imageUrl}
-                onChange={e => setImageUrl(e.target.value)}
+                onChange={e => { setImageUrl(e.target.value); if (e.target.value) setImageError('') }}
                 placeholder="https://… (auto-filled if found)"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className={`w-full border rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent ${
+                  !imageUrl && imageError ? 'border-amber-300 bg-amber-50' : 'border-gray-200'
+                }`}
               />
+              {!imageUrl && imageError && (
+                <p className="text-xs text-amber-600 mt-1.5 flex items-start gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                  {imageError}
+                </p>
+              )}
             </div>
 
             {/* Description */}
