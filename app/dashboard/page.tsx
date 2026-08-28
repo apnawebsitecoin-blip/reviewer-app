@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { formatCurrency, formatDate, getSentimentBg } from '@/lib/utils'
-import { Wallet, Star, MousePointerClick, TrendingUp, Heart, Bell, ShoppingBag, Crown } from 'lucide-react'
+import { Wallet, Star, MousePointerClick, TrendingUp, Heart, Bell, ShoppingBag, Crown, ChevronRight } from 'lucide-react'
 import WithdrawButton from './WithdrawButton'
 import VideoUploadForm from '@/components/VideoUploadForm'
 import CheckInButton from '@/components/CheckInButton'
@@ -62,8 +62,36 @@ export default async function DashboardPage() {
         <DashboardStatCard icon={<MousePointerClick className="w-5 h-5 text-pink-500" />} label={t('statClicks')}  value={clickCount ?? 0} />
       </FadeInSection>
 
-      {/* Wallet card */}
+      {/* Submit Deal CTA */}
       <FadeInSection delay={0.05} className="mb-6">
+        <Link href="/dashboard/submit-deal">
+          <div
+            className="relative overflow-hidden rounded-2xl p-5 flex items-center justify-between gap-4 hover:opacity-95 active:opacity-90 transition-opacity cursor-pointer"
+            style={{ background: 'linear-gradient(120deg, var(--brand) 0%, color-mix(in srgb, var(--brand) 75%, #000) 100%)' }}
+          >
+            {/* Decorative circles */}
+            <div className="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
+            <div className="absolute -right-2 -bottom-8 w-20 h-20 rounded-full bg-white/5 pointer-events-none" />
+
+            <div className="relative">
+              <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1">Community Deals</p>
+              <h3 className="text-base font-black text-white leading-snug">
+                Product suggest karo, reward pao! 🎁
+              </h3>
+              <p className="text-xs text-white/70 mt-1">
+                Link paste karo — naam, price, image auto-fill
+              </p>
+            </div>
+
+            <div className="relative shrink-0 w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+              <ChevronRight className="w-5 h-5 text-white" />
+            </div>
+          </div>
+        </Link>
+      </FadeInSection>
+
+      {/* Wallet card */}
+      <FadeInSection delay={0.07} className="mb-6">
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
