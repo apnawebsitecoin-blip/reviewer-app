@@ -24,11 +24,12 @@ export function buildAffiliateUrl(originalUrl: string, platform: string | null, 
   const tag = process.env.NEXT_PUBLIC_AFFILIATE_TAG || 'REVIEWAPP-21'
   try {
     const url = new URL(originalUrl)
-    if (platform === 'amazon') {
-      url.searchParams.set('tag', tag)
+    const p = (platform ?? '').toLowerCase()
+    if (p === 'amazon') {
+      url.searchParams.set('tag', tag)        // Amazon Associates param
       url.searchParams.set('subid', reviewerId)
-    } else if (platform === 'flipkart') {
-      url.searchParams.set('affid', tag)
+    } else if (p === 'flipkart') {
+      url.searchParams.set('affid', tag)      // Flipkart affiliate param
       url.searchParams.set('subid', reviewerId)
     } else {
       url.searchParams.set('ref', tag)

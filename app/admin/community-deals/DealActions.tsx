@@ -4,6 +4,19 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 
+function detectPlatform(url: string): string {
+  const u = url.toLowerCase()
+  if (u.includes('amazon.in') || u.includes('amazon.com')) return 'Amazon'
+  if (u.includes('flipkart.com'))  return 'Flipkart'
+  if (u.includes('meesho.com'))    return 'Meesho'
+  if (u.includes('myntra.com'))    return 'Myntra'
+  if (u.includes('snapdeal.com'))  return 'Snapdeal'
+  if (u.includes('ajio.com'))      return 'AJIO'
+  if (u.includes('nykaa.com'))     return 'Nykaa'
+  if (u.includes('jiomart.com'))   return 'JioMart'
+  return 'Other'
+}
+
 interface Props {
   id: string
   status: 'pending' | 'approved' | 'rejected'
@@ -11,9 +24,10 @@ interface Props {
   productUrl: string
   price: number | null
   category: string | null
+  imageUrl: string | null
 }
 
-export default function DealActions({ id, status, productName, productUrl, price, category }: Props) {
+export default function DealActions({ id, status, productName, productUrl, price, category, imageUrl }: Props) {
   const supabase = createClient()
   const router = useRouter()
   const [loading, setLoading] = useState<'approve' | 'reject' | null>(null)
@@ -35,6 +49,8 @@ export default function DealActions({ id, status, productName, productUrl, price
       original_url: productUrl,
       price: price ?? null,
       category: category ?? null,
+      platform: detectPlatform(productUrl),
+      image_url: imageUrl ?? null,
     })
 
     setLoading(null)

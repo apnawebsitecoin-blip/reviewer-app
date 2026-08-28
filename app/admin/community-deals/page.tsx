@@ -137,6 +137,7 @@ export default async function AdminCommunityDealsPage({
                         productUrl={deal.product_url}
                         price={deal.price}
                         category={deal.category}
+                        imageUrl={deal.image_url ?? null}
                       />
                     </td>
                   </tr>
