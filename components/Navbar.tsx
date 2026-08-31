@@ -60,6 +60,7 @@ export default function Navbar({ siteName, brandColor }: { siteName?: string; br
           <Link href="/products" className="hover:text-indigo-600">{t('products')}</Link>
           <Link href="/leaderboard" className="hover:text-indigo-600">{t('leaderboard')}</Link>
           <Link href="/compare" className="hover:text-indigo-600">{t('compare')}</Link>
+          <Link href="/blog" className="hover:text-indigo-600">Guides</Link>
           {user && <Link href="/dashboard" className="hover:text-indigo-600">{t('dashboard')}</Link>}
           {isAdmin && <Link href="/admin" className="hover:text-indigo-600 text-purple-600">{t('admin')}</Link>}
         </div>
@@ -99,6 +100,7 @@ export default function Navbar({ siteName, brandColor }: { siteName?: string; br
           <Link href="/products" className="block py-1" onClick={() => setMenuOpen(false)}>{t('products')}</Link>
           <Link href="/leaderboard" className="block py-1" onClick={() => setMenuOpen(false)}>{t('leaderboard')}</Link>
           <Link href="/compare" className="block py-1" onClick={() => setMenuOpen(false)}>{t('compare')}</Link>
+          <Link href="/blog" className="block py-1" onClick={() => setMenuOpen(false)}>Guides</Link>
           {user && <Link href="/dashboard" className="block py-1" onClick={() => setMenuOpen(false)}>{t('dashboard')}</Link>}
           {isAdmin && <Link href="/admin" className="block py-1 text-purple-600" onClick={() => setMenuOpen(false)}>{t('admin')}</Link>}
           {user && <button onClick={() => { setMenuOpen(false); logout() }} className="block py-1 text-red-500">{t('logout')}</button>}

@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Package, Star, DollarSign,
   Users, BookMarked, Bell, Settings2, Ticket, Film, Zap,
-  ArrowDownToLine, CreditCard, ShoppingBag, BarChart3,
+  ArrowDownToLine, CreditCard, ShoppingBag, BarChart3, BookOpen,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -30,6 +30,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/analytics',           label: 'Analytics',      Icon: BarChart3       },
   { href: '/admin/withdrawal-requests', label: 'Withdrawals',    Icon: ArrowDownToLine },
   { href: '/admin/payment-settings',    label: 'Payments',       Icon: CreditCard      },
+  { href: '/admin/blog',                 label: 'Blog / Guides',  Icon: BookOpen        },
   { href: '/admin/settings',            label: 'Site Settings',  Icon: Settings2       },
 ]
 
