@@ -9,6 +9,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages, getTranslations } from 'next-intl/server'
 import OneSignalInit from '@/components/OneSignalInit'
 import BottomNav from '@/components/BottomNav'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 export const dynamic = 'force-dynamic'
 
@@ -54,6 +55,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className={`${jakarta.variable} font-sans bg-white min-h-screen antialiased`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
         <OneSignalInit />
+        <ThemeProvider>
         <Providers>
           <Navbar siteName={settings.siteName} brandColor={brand} />
 
@@ -112,6 +114,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </div>
           </footer>
         </Providers>
+        </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

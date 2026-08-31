@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Bell, ShoppingBag, Menu, X, Globe } from 'lucide-react'
 import { useTranslations, useLocale } from 'next-intl'
 import type { User } from '@supabase/supabase-js'
+import ThemeToggle from './ThemeToggle'
 
 export default function Navbar({ siteName, brandColor }: { siteName?: string; brandColor?: string }) {
   const t = useTranslations('nav')
@@ -66,6 +67,7 @@ export default function Navbar({ siteName, brandColor }: { siteName?: string; br
         </div>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <button
             onClick={toggleLang}
             className="text-xs border rounded px-2 py-1 text-gray-500 hover:text-indigo-600 flex items-center gap-1"

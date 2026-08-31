@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #1a1a1a;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
 }
 
 @theme inline {
@@ -21,6 +29,29 @@ body {
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
+
+/* ── Dark mode base overrides ─────────────────────────────────────────────── */
+.dark body { background: var(--background); color: var(--foreground); }
+
+/* Navbar */
+.dark nav.bg-white { background-color: #1e293b !important; border-color: #334155 !important; }
+.dark nav a, .dark nav button { color: #cbd5e1; }
+.dark nav a:hover, .dark nav button:hover { color: #f1f5f9; }
+
+/* BottomNav */
+.dark .bg-white\/95 { background-color: rgba(30, 41, 59, 0.97) !important; border-color: #334155 !important; }
+
+/* General cards */
+.dark .bg-white { background-color: #1e293b !important; }
+.dark .bg-gray-50 { background-color: #0f172a !important; }
+.dark .border-gray-100 { border-color: #334155 !important; }
+.dark .border-gray-200 { border-color: #475569 !important; }
+.dark .text-gray-900 { color: #f1f5f9 !important; }
+.dark .text-gray-800 { color: #e2e8f0 !important; }
+.dark .text-gray-700 { color: #cbd5e1 !important; }
+.dark .text-gray-600 { color: #94a3b8 !important; }
+.dark .text-gray-500 { color: #64748b !important; }
+.dark .text-gray-400 { color: #475569 !important; }
 
 /* Hide scrollbar utility */
 .no-scrollbar::-webkit-scrollbar { display: none; }
