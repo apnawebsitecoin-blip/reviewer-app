@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getSiteSettings } from '@/lib/settings'
 import type { Metadata } from 'next'
 import { BookOpen, Calendar, Tag, ChevronLeft } from 'lucide-react'
+import { marked } from 'marked'
 
 export const dynamic = 'force-dynamic'
 
@@ -89,10 +90,11 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
       )}
 
-      {/* Content — rendered as plain whitespace-preserved text */}
-      <article className="prose prose-sm sm:prose max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
-        {post.content}
-      </article>
+      {/* Content — markdown rendered as HTML */}
+      <article
+        className="prose prose-sm sm:prose max-w-none text-gray-700 leading-relaxed"
+        dangerouslySetInnerHTML={{ __html: marked(post.content) as string }}
+      />
 
       {/* Footer back link */}
       <div className="mt-10 pt-6 border-t border-gray-100">
