@@ -11,6 +11,7 @@ import { getSiteSettings } from '@/lib/settings'
 import { getIcon } from '@/lib/icons'
 import { getTranslations } from 'next-intl/server'
 import FadeInSection from '@/components/FadeInSection'
+import ProductFinder from '@/components/ProductFinder'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,6 +77,9 @@ export default async function HomePage() {
     <div className="pb-20 md:pb-0">
       {/* ══ 0. HERO SECTION ══ */}
       <HeroSection brand={brand} />
+
+      {/* ══ PRODUCT FINDER floating widget ══ */}
+      <ProductFinder />
 
       {/* ══ 1. PROMO BANNER ══ */}
       <FadeInSection className="-mx-4 sm:-mx-6 mb-8">
