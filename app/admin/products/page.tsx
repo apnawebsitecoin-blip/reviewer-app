@@ -94,9 +94,17 @@ export default async function AdminProductsPage() {
                       </td>
                       <td className="px-4 py-3">
                         <ProductActions
-                          productId={p.id}
-                          isFeatured={p.is_featured ?? false}
-                          isSponsored={p.is_sponsored ?? false}
+                          product={{
+                            id:           p.id,
+                            name:         p.name,
+                            image_url:    p.image_url ?? null,
+                            price:        p.price ?? null,
+                            platform:     p.platform ?? null,
+                            original_url: p.original_url ?? '',
+                            category:     p.category ?? null,
+                            is_featured:  p.is_featured ?? false,
+                            is_sponsored: p.is_sponsored ?? false,
+                          }}
                         />
                       </td>
                     </tr>
