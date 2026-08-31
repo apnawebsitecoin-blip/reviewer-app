@@ -10,6 +10,7 @@ import { getLocale, getMessages, getTranslations } from 'next-intl/server'
 import OneSignalInit from '@/components/OneSignalInit'
 import BottomNav from '@/components/BottomNav'
 import { ThemeProvider } from '@/components/ThemeProvider'
+import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,6 +41,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale}>
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content={brand} />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         {/* Inject dynamic brand color as CSS variable */}
         <style>{`
           :root {
@@ -54,6 +60,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className={`${jakarta.variable} font-sans bg-white min-h-screen antialiased`}>
         <NextIntlClientProvider locale={locale} messages={messages}>
+        <ServiceWorkerRegistrar />
         <OneSignalInit />
         <ThemeProvider>
         <Providers>

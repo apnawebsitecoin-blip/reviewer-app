@@ -1,0 +1,34 @@
+{
+  "name": "ReviewerApp — Earn by Reviewing",
+  "short_name": "ReviewerApp",
+  "description": "Discover deals, write reviews, and earn cashback rewards.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#4F46E5",
+  "background_color": "#ffffff",
+  "categories": ["shopping", "finance"],
+  "icons": [
+    {
+      "src": "/globe.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Go to your reviewer dashboard",
+      "url": "/dashboard"
+    },
+    {
+      "name": "Browse Products",
+      "short_name": "Products",
+      "description": "Browse all deals",
+      "url": "/products"
+    }
+  ]
+}
