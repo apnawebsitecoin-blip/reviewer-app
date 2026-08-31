@@ -17,12 +17,15 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function BlogPage() {
   const supabase = await createClient()
-  const { data: posts } = await supabase
+  const { data: posts, error: postsError } = await supabase
     .from('blog_posts')
     .select('id, title, slug, cover_image, category, meta_description, published_at')
     .not('published_at', 'is', null)
     .lte('published_at', new Date().toISOString())
     .order('published_at', { ascending: false })
+
+  if (postsError) console.error('[blog] query error:', postsError)
+  console.log('[blog] posts count:', posts?.length ?? 0, 'now:', new Date().toISOString())
 
   const list = posts ?? []
 

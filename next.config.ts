@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images-na.ssl-images-amazon.com" },
       { protocol: "https", hostname: "rukminim2.flixcart.com" },
       { protocol: "https", hostname: "**.supabase.co" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
 };
