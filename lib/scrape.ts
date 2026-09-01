@@ -168,7 +168,7 @@ export async function scrapeProduct(url: string): Promise<ScrapeResult> {
         'DNT': '1',
         'Upgrade-Insecure-Requests': '1',
       },
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(8000),
       redirect: 'follow',
     })
 

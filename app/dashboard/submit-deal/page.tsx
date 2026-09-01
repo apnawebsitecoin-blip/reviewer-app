@@ -40,12 +40,16 @@ export default function SubmitDealPage() {
     if (!linkUrl.startsWith('http')) return
     setLinkPhase('fetching')
     setFetchError('')
+    const controller = new AbortController()
+    const clientTimeout = setTimeout(() => controller.abort(), 20000)
     try {
       const res = await fetch('/api/scrape-product', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: linkUrl }),
+        signal: controller.signal,
       })
+      clearTimeout(clientTimeout)
       const data = await res.json()
       setProductUrl(linkUrl)
       setProductName(data.name ?? '')
@@ -54,8 +58,10 @@ export default function SubmitDealPage() {
       setLinkPhase('ready')
       if (data.error) setFetchError(data.error)
       if (data.image_error) setImageError(data.image_error)
-    } catch {
-      setFetchError('Network error — manually fill karo')
+    } catch (err: unknown) {
+      clearTimeout(clientTimeout)
+      const isTimeout = err instanceof Error && err.name === 'AbortError'
+      setFetchError(isTimeout ? 'Timeout — dobara try karo' : 'Network error — manually fill karo')
       setProductUrl(linkUrl)
       setLinkPhase('ready')
     }
