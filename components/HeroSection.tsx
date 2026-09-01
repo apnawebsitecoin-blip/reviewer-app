@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
 import { ArrowRight, ShoppingBag, Search, Star, Wallet, IndianRupee, BadgeCheck, Zap } from 'lucide-react'
+import EarningStoryAnimation from '@/components/EarningStoryAnimation'
 
 // ── Marquee ticker ────────────────────────────────────────────────────────────
 
@@ -457,6 +458,16 @@ export default function HeroSection({ brand }: { brand: string }) {
                 >
                   Deals Dekho
                 </Link>
+              </motion.div>
+
+              {/* Earning story animation */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.72 }}
+                className="mt-8 flex justify-center lg:justify-start"
+              >
+                <EarningStoryAnimation />
               </motion.div>
             </div>
 
