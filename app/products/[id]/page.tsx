@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import Image from 'next/image'
 import ProductDetailClient from './ProductDetailClient'
+import ProductImageGallery from '@/components/ProductImageGallery'
 import AnimatedReviewList from './AnimatedReviewList'
 import { ClientSentimentChart, ClientQASection, ClientPriceHistoryChart } from './ClientComponents'
 import CouponSection from '@/components/CouponSection'
@@ -28,6 +28,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     { data: allCoupons },
     { count: wishlistCount },
     { count: todayViews },
+    { data: productImageRows },
   ] = await Promise.all([
     supabase.from('reviews').select('*, profiles(id, name, trust_score)').eq('product_id', id).eq('verified', true).order('created_at', { ascending: false }),
     supabase.auth.getUser(),
@@ -35,6 +36,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     supabase.from('coupons').select('*').eq('is_active', true).order('created_at', { ascending: false }),
     supabase.from('wishlists').select('*', { count: 'exact', head: true }).eq('product_id', id),
     supabase.from('clicks').select('*', { count: 'exact', head: true }).eq('product_id', id).gte('clicked_at', new Date(Date.now() - 86400000).toISOString()),
+    supabase.from('product_images').select('image_url').eq('product_id', id).order('display_order'),
   ])
 
   const { data: wishlistRow } = user
@@ -57,6 +59,11 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     return true
   })
 
+  const galleryImages: string[] = [
+    ...(product.image_url ? [product.image_url] : []),
+    ...(productImageRows ?? []).map((r: { image_url: string }) => r.image_url),
+  ]
+
   const brand = settings.brandColor
 
   return (
@@ -66,20 +73,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="md:grid md:grid-cols-[380px_1fr]">
 
-          {/* Image */}
+          {/* Image gallery */}
           <div className="relative aspect-square bg-gray-50 flex-shrink-0">
-            {product.image_url ? (
-              <Image
-                src={product.image_url}
-                alt={product.name}
-                fill
-                className="object-cover"
-                unoptimized
-                priority
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-7xl text-gray-200">📦</div>
-            )}
+            <ProductImageGallery images={galleryImages} productName={product.name} />
 
             {/* Platform pill */}
             {product.platform && (

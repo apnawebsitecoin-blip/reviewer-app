@@ -1,8 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { X, Loader2, Save } from 'lucide-react'
+import { X, Loader2, Save, Plus } from 'lucide-react'
 
 const CATEGORIES = ['Electronics', 'Beauty', 'Kitchen', 'Fashion', 'Health', 'Books', 'Sports', 'Home', 'Toys', 'Other']
 const PLATFORMS  = ['amazon', 'flipkart', 'meesho', 'myntra', 'other']
@@ -37,6 +37,22 @@ export default function EditProductModal({ product, onClose }: Props) {
     original_url: product.original_url ?? '',
     category:     product.category ?? 'Electronics',
   })
+  const [extraImages, setExtraImages] = useState<string[]>([])
+
+  // Load existing gallery images
+  useEffect(() => {
+    supabase
+      .from('product_images')
+      .select('image_url, display_order')
+      .eq('product_id', product.id)
+      .order('display_order')
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setExtraImages(data.map(r => r.image_url))
+        }
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id])
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
@@ -44,7 +60,8 @@ export default function EditProductModal({ product, onClose }: Props) {
     e.preventDefault()
     setLoading(true)
     setError('')
-    const { error: err } = await supabase.from('products').update({
+
+    const { error: updateErr } = await supabase.from('products').update({
       name:         form.name,
       image_url:    form.image_url || null,
       price:        form.price ? parseFloat(form.price) : null,
@@ -52,7 +69,18 @@ export default function EditProductModal({ product, onClose }: Props) {
       original_url: form.original_url,
       category:     form.category,
     }).eq('id', product.id)
-    if (err) { setError(err.message); setLoading(false); return }
+
+    if (updateErr) { setError(updateErr.message); setLoading(false); return }
+
+    // Replace gallery images: delete all then re-insert
+    await supabase.from('product_images').delete().eq('product_id', product.id)
+    const validExtras = extraImages.map(u => u.trim()).filter(Boolean)
+    if (validExtras.length > 0) {
+      await supabase.from('product_images').insert(
+        validExtras.map((image_url, display_order) => ({ product_id: product.id, image_url, display_order }))
+      )
+    }
+
     router.refresh()
     onClose()
   }
@@ -77,7 +105,7 @@ export default function EditProductModal({ product, onClose }: Props) {
           <div className="px-5 pt-4 flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={form.image_url} alt={form.name} className="w-14 h-14 object-cover rounded-xl border border-gray-100 shadow-sm" />
-            <p className="text-xs text-gray-400">Current image preview — update URL below to change</p>
+            <p className="text-xs text-gray-400">Current thumbnail — update URL below to change</p>
           </div>
         )}
 
@@ -99,7 +127,7 @@ export default function EditProductModal({ product, onClose }: Props) {
               onChange={e => set('price', e.target.value)} className={INPUT} placeholder="999" />
           </div>
           <div>
-            <label className={LABEL}>Image URL</label>
+            <label className={LABEL}>Main Image URL (Thumbnail)</label>
             <input type="url" value={form.image_url}
               onChange={e => set('image_url', e.target.value)} className={INPUT} placeholder="https://..." />
           </div>
@@ -114,6 +142,38 @@ export default function EditProductModal({ product, onClose }: Props) {
             <select value={form.category} onChange={e => set('category', e.target.value)} className={INPUT}>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
+          </div>
+
+          {/* Extra gallery images */}
+          <div className="col-span-full">
+            <label className={LABEL}>Extra Gallery Images</label>
+            <div className="flex flex-col gap-2">
+              {extraImages.map((url, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    placeholder={`Gallery image ${i + 1} URL`}
+                    value={url}
+                    onChange={e => setExtraImages(imgs => imgs.map((u, j) => j === i ? e.target.value : u))}
+                    className={INPUT}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setExtraImages(imgs => imgs.filter((_, j) => j !== i))}
+                    className="shrink-0 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setExtraImages(imgs => [...imgs, ''])}
+                className="self-start flex items-center gap-1.5 text-xs text-indigo-600 font-semibold hover:underline"
+              >
+                <Plus className="w-3.5 h-3.5" /> Image add karo
+              </button>
+            </div>
           </div>
 
           {error && (

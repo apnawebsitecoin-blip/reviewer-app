@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Plus, ChevronDown, ChevronUp, Loader2 } from 'lucide-react'
+import { Plus, ChevronDown, ChevronUp, Loader2, X } from 'lucide-react'
 
 const CATEGORIES = ['Electronics', 'Beauty', 'Kitchen', 'Fashion', 'Health', 'Books', 'Sports', 'Home', 'Toys', 'Other']
 const PLATFORMS  = ['amazon', 'flipkart', 'meesho', 'myntra', 'other']
@@ -19,22 +19,38 @@ export default function AddProductForm() {
   const [form, setForm] = useState({
     name: '', image_url: '', price: '', platform: 'amazon', original_url: '', category: 'Electronics',
   })
+  const [extraImages, setExtraImages] = useState<string[]>([])
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true); setError('')
-    const { error } = await supabase.from('products').insert({
-      name: form.name,
-      image_url: form.image_url || null,
-      price: form.price ? parseFloat(form.price) : null,
-      platform: form.platform,
-      original_url: form.original_url,
-      category: form.category,
-    })
-    if (error) { setError(error.message); setLoading(false); return }
+
+    const { data: inserted, error: insertErr } = await supabase
+      .from('products')
+      .insert({
+        name: form.name,
+        image_url: form.image_url || null,
+        price: form.price ? parseFloat(form.price) : null,
+        platform: form.platform,
+        original_url: form.original_url,
+        category: form.category,
+      })
+      .select('id')
+      .single()
+
+    if (insertErr) { setError(insertErr.message); setLoading(false); return }
+
+    const validExtras = extraImages.map(u => u.trim()).filter(Boolean)
+    if (inserted && validExtras.length > 0) {
+      await supabase.from('product_images').insert(
+        validExtras.map((image_url, display_order) => ({ product_id: inserted.id, image_url, display_order }))
+      )
+    }
+
     setForm({ name: '', image_url: '', price: '', platform: 'amazon', original_url: '', category: 'Electronics' })
+    setExtraImages([])
     setOpen(false)
     setLoading(false)
     router.refresh()
@@ -75,7 +91,7 @@ export default function AddProductForm() {
               onChange={e => set('price', e.target.value)} className={INPUT} />
           </div>
           <div>
-            <label className={LABEL}>Image URL</label>
+            <label className={LABEL}>Main Image URL (Thumbnail)</label>
             <input type="url" placeholder="https://..." value={form.image_url}
               onChange={e => set('image_url', e.target.value)} className={INPUT} />
           </div>
@@ -90,6 +106,38 @@ export default function AddProductForm() {
             <select value={form.category} onChange={e => set('category', e.target.value)} className={INPUT}>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
+          </div>
+
+          {/* Extra gallery images */}
+          <div className="col-span-full">
+            <label className={LABEL}>Extra Gallery Images (optional)</label>
+            <div className="flex flex-col gap-2">
+              {extraImages.map((url, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    type="url"
+                    placeholder={`Gallery image ${i + 1} URL`}
+                    value={url}
+                    onChange={e => setExtraImages(imgs => imgs.map((u, j) => j === i ? e.target.value : u))}
+                    className={INPUT}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setExtraImages(imgs => imgs.filter((_, j) => j !== i))}
+                    className="shrink-0 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setExtraImages(imgs => [...imgs, ''])}
+                className="self-start flex items-center gap-1.5 text-xs text-indigo-600 font-semibold hover:underline"
+              >
+                <Plus className="w-3.5 h-3.5" /> Image add karo
+              </button>
+            </div>
           </div>
 
           {error && (
