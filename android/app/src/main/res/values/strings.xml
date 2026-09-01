@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">ReviewApp</string>
-    <string name="title_activity_main">ReviewApp</string>
-    <string name="package_name">com.reviewapp.android</string>
-    <string name="custom_url_scheme">com.reviewapp.android</string>
+    <string name="app_name">Raikaro</string>
+    <string name="title_activity_main">Raikaro</string>
+    <string name="package_name">com.raikaro.reviewapp</string>
+    <string name="custom_url_scheme">com.raikaro.reviewapp</string>
 </resources>

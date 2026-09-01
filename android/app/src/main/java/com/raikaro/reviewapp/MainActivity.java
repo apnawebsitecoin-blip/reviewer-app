@@ -1,4 +1,4 @@
-package com.reviewapp.android;
+package com.raikaro.reviewapp;
 
 import com.getcapacitor.BridgeActivity;
 
