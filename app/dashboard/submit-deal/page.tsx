@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -35,9 +35,23 @@ export default function SubmitDealPage() {
   const [submitting, setSubmitting]     = useState(false)
   const [success, setSuccess]           = useState(false)
   const [submitError, setSubmitError]   = useState('')
+  const [urlError, setUrlError]         = useState('')
+
+  const linkInputRef = useRef<HTMLInputElement>(null)
+
+  const handleLinkPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasted = e.clipboardData?.getData('text')
+    if (pasted) { setLinkUrl(pasted); setUrlError('') }
+    const el = e.currentTarget
+    setTimeout(() => { if (el.value) { setLinkUrl(el.value); setUrlError('') } }, 50)
+  }
 
   const handleFetch = async () => {
-    if (!linkUrl.startsWith('http')) return
+    if (!linkUrl.startsWith('http')) {
+      setUrlError('Valid product URL daalo (http:// ya https:// se shuru hona chahiye)')
+      return
+    }
+    setUrlError('')
     setLinkPhase('fetching')
     setFetchError('')
     const controller = new AbortController()
@@ -166,22 +180,28 @@ export default function SubmitDealPage() {
             </p>
             <div className="flex gap-2">
               <input
+                ref={linkInputRef}
                 type="url"
                 value={linkUrl}
-                onChange={e => setLinkUrl(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && linkUrl.startsWith('http') && handleFetch()}
+                onChange={e => { setLinkUrl(e.target.value); setUrlError('') }}
+                onPaste={handleLinkPaste}
+                onKeyDown={e => e.key === 'Enter' && handleFetch()}
                 placeholder="https://amazon.in/dp/... ya Flipkart/Meesho link"
                 className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
               />
               <button
                 type="button"
                 onClick={handleFetch}
-                disabled={!linkUrl.startsWith('http')}
-                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-colors whitespace-nowrap"
+                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition-colors whitespace-nowrap"
               >
                 <ArrowRight className="w-4 h-4" /> Fetch
               </button>
             </div>
+            {urlError && (
+              <p className="text-xs text-red-500 flex items-center gap-1 -mt-1">
+                <AlertCircle className="w-3 h-3 shrink-0" /> {urlError}
+              </p>
+            )}
           </div>
         )}
 

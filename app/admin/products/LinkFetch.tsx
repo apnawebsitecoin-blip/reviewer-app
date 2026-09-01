@@ -1,5 +1,5 @@
 'use client'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import {
   Link2, Loader2, CheckCircle2, AlertCircle, XCircle,
   X, Upload, RefreshCw, ExternalLink,
@@ -43,6 +43,7 @@ const BATCH_SIZE  = 50
 export default function LinkFetch() {
   const [phase, setPhase]               = useState<LinkPhase>('idle')
   const [linksText, setLinksText]       = useState('')
+  const textareaRef                     = useRef<HTMLTextAreaElement>(null)
   const [rows, setRows]                 = useState<FetchedRow[]>([])
   const [fetchDone, setFetchDone]       = useState(0)
   const [fetchTotal, setFetchTotal]     = useState(0)
@@ -191,8 +192,14 @@ export default function LinkFetch() {
           System naam, price aur image auto-fetch karega — phir aap edit karke upload kar sakte ho.
         </p>
         <textarea
+          ref={textareaRef}
           value={linksText}
           onChange={e => setLinksText(e.target.value)}
+          onInput={e => setLinksText((e.target as HTMLTextAreaElement).value)}
+          onPaste={() => {
+            const el = textareaRef.current
+            if (el) setTimeout(() => setLinksText(el.value), 50)
+          }}
           rows={6}
           placeholder={[
             'https://www.amazon.in/dp/B0CHX3TK7D',
@@ -207,11 +214,10 @@ export default function LinkFetch() {
           </p>
           <button
             onClick={handleFetch}
-            disabled={urlCount === 0}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors"
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors"
           >
             <Link2 className="w-4 h-4" />
-            Fetch Product Data
+            {urlCount > 0 ? `Fetch ${urlCount} URL${urlCount !== 1 ? 's' : ''}` : 'Fetch Product Data'}
           </button>
         </div>
       </div>
