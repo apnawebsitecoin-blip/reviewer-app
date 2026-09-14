@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase/server'
 import { getSiteSettings } from '@/lib/settings'
 
 export const dynamic = 'force-dynamic'
@@ -17,8 +18,26 @@ const DEFAULT_PRIVACY = `1. Data Collected: We collect your name, email, phone n
 7. Security: We use industry-standard encryption for data in transit and at rest. Passwords are hashed by Supabase Auth (bcrypt).`
 
 export default async function PrivacyPage() {
-  const settings = await getSiteSettings()
-  const content = settings.privacyContent?.trim() || DEFAULT_PRIVACY
+  const supabase = await createClient()
+  let content = ''
+
+  // content_pages table: prefer dedicated row over site_settings.privacyContent
+  try {
+    const { data: page } = await supabase
+      .from('content_pages')
+      .select('body')
+      .eq('slug', 'privacy')
+      .eq('is_published', true)
+      .maybeSingle()
+
+    if (page?.body?.trim()) content = page.body
+  } catch { /* table may not exist yet */ }
+
+  // Fall back to site_settings.privacyContent, then hardcoded default
+  if (!content) {
+    const settings = await getSiteSettings()
+    content = settings.privacyContent?.trim() || DEFAULT_PRIVACY
+  }
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-8 my-6">

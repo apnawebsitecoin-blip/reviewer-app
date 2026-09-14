@@ -6,6 +6,7 @@ import {
   LayoutDashboard, Package, Star, DollarSign,
   Users, BookMarked, Bell, Settings2, Ticket, Film, Zap,
   ArrowDownToLine, CreditCard, ShoppingBag, BarChart3, BookOpen, GalleryHorizontal,
+  UserCircle,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -33,6 +34,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/payment-settings',    label: 'Payments',       Icon: CreditCard      },
   { href: '/admin/blog',                 label: 'Blog / Guides',  Icon: BookOpen        },
   { href: '/admin/settings',            label: 'Site Settings',  Icon: Settings2       },
+  { href: '/admin/account',             label: 'My Account',     Icon: UserCircle      },
 ]
 
 export default function AdminNav() {

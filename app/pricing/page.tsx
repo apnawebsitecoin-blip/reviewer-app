@@ -4,7 +4,7 @@ import PricingUpgradeButton from './PricingUpgradeButton'
 
 export const dynamic = 'force-dynamic'
 
-const FREE_FEATURES = [
+const DEFAULT_FREE_FEATURES = [
   'Basic access to all products',
   'Verified review submissions',
   'Wallet earnings & cashback',
@@ -12,7 +12,7 @@ const FREE_FEATURES = [
   'Daily check-in bonuses',
 ]
 
-const PREMIUM_FEATURES = [
+const DEFAULT_PREMIUM_FEATURES = [
   'Early access to new deals (24h before public)',
   'Priority review verification',
   'Exclusive flash deals for Premium members',
@@ -43,6 +43,29 @@ export default async function PricingPage() {
     }
   }
 
+  // premium_plan_config: read dynamic plan configuration
+  let premiumPrice = 49
+  let premiumPeriod = 'month'
+  let freeFeatures: string[] = DEFAULT_FREE_FEATURES
+  let premiumFeatures: string[] = DEFAULT_PREMIUM_FEATURES
+
+  try {
+    const { data: planConfig } = await supabase
+      .from('premium_plan_config')
+      .select('premium_price, premium_period, free_features, premium_features')
+      .eq('id', 1)
+      .single()
+
+    if (planConfig) {
+      if (typeof planConfig.premium_price === 'number') premiumPrice = planConfig.premium_price
+      if (planConfig.premium_period) premiumPeriod = planConfig.premium_period
+      if (Array.isArray(planConfig.free_features) && planConfig.free_features.length > 0)
+        freeFeatures = planConfig.free_features
+      if (Array.isArray(planConfig.premium_features) && planConfig.premium_features.length > 0)
+        premiumFeatures = planConfig.premium_features
+    }
+  } catch { /* table may not exist yet — use defaults */ }
+
   return (
     <div className="max-w-4xl mx-auto py-12 px-4">
       {/* Hero */}
@@ -65,7 +88,7 @@ export default async function PricingPage() {
           </div>
 
           <ul className="space-y-3 mb-8">
-            {FREE_FEATURES.map(feature => (
+            {freeFeatures.map(feature => (
               <li key={feature} className="flex items-start gap-3">
                 <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
                   <Check className="w-3 h-3 text-emerald-600" strokeWidth={2.5} />
@@ -82,7 +105,6 @@ export default async function PricingPage() {
 
         {/* Premium tier */}
         <div className="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-2xl shadow-[0_4px_24px_rgba(79,70,229,0.35)] p-8 relative overflow-hidden">
-          {/* Background decoration */}
           <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-16 translate-x-16" />
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-12 -translate-x-10" />
 
@@ -92,14 +114,14 @@ export default async function PricingPage() {
               <p className="text-sm font-bold text-indigo-200 uppercase tracking-wider">Premium</p>
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold text-white">₹49</span>
-              <span className="text-indigo-300 text-sm">/month</span>
+              <span className="text-4xl font-extrabold text-white">₹{premiumPrice}</span>
+              <span className="text-indigo-300 text-sm">/{premiumPeriod}</span>
             </div>
             <p className="text-sm text-indigo-200 mt-2">Get the edge with exclusive perks</p>
           </div>
 
           <ul className="space-y-3 mt-6 mb-8 relative">
-            {PREMIUM_FEATURES.map(feature => (
+            {premiumFeatures.map(feature => (
               <li key={feature} className="flex items-start gap-3">
                 <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0 mt-0.5">
                   <Check className="w-3 h-3 text-white" strokeWidth={2.5} />
@@ -129,7 +151,6 @@ export default async function PricingPage() {
         </div>
       </div>
 
-      {/* FAQ note */}
       <p className="text-center text-sm text-gray-400 mt-8">
         Questions? Contact us at{' '}
         <a href="mailto:support@reviewapp.in" className="text-indigo-600 hover:underline">

@@ -1,3 +1,4 @@
+import { createClient } from '@/lib/supabase/server'
 import { getSiteSettings } from '@/lib/settings'
 
 export const dynamic = 'force-dynamic'
@@ -19,8 +20,26 @@ const DEFAULT_TERMS = `1. Eligibility: You must have purchased the product to su
 8. Changes: These terms may be updated at any time. Continued use of the platform constitutes acceptance of updated terms.`
 
 export default async function TermsPage() {
-  const settings = await getSiteSettings()
-  const content = settings.termsContent?.trim() || DEFAULT_TERMS
+  const supabase = await createClient()
+  let content = ''
+
+  // content_pages table: prefer dedicated row over site_settings.termsContent
+  try {
+    const { data: page } = await supabase
+      .from('content_pages')
+      .select('body')
+      .eq('slug', 'terms')
+      .eq('is_published', true)
+      .maybeSingle()
+
+    if (page?.body?.trim()) content = page.body
+  } catch { /* table may not exist yet */ }
+
+  // Fall back to site_settings.termsContent, then hardcoded default
+  if (!content) {
+    const settings = await getSiteSettings()
+    content = settings.termsContent?.trim() || DEFAULT_TERMS
+  }
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow p-8 my-6">

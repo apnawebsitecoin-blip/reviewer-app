@@ -4,6 +4,10 @@ import Image from 'next/image'
 import { TrendingUp, Star, ChevronRight } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import PromoBanner from '@/components/PromoBanner'
+import HomeBannerCarousel from '@/components/HomeBannerCarousel'
+import type { HomeBanner } from '@/components/HomeBannerCarousel'
+import BankOffersSection from '@/components/BankOffersSection'
+import type { BankOffer } from '@/components/BankOffersSection'
 import FlashDealsSection from '@/components/FlashDealsSection'
 import HeroSection from '@/components/HeroSection'
 import TiltWrapper from '@/components/TiltWrapper'
@@ -22,6 +26,28 @@ export default async function HomePage() {
     getTranslations('home'),
     getTranslations('common'),
   ])
+
+  // home_banners: prefer dedicated table over site_settings.banners
+  let homeBanners: HomeBanner[] = []
+  try {
+    const { data } = await supabase
+      .from('home_banners')
+      .select('id, image_url, title, subtitle, link_url, display_order, platform')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    if (data && data.length > 0) homeBanners = data as HomeBanner[]
+  } catch { /* table may not exist yet — fall back to settings.banners */ }
+
+  // bank_offers: show if table has active entries
+  let bankOffers: BankOffer[] = []
+  try {
+    const { data } = await supabase
+      .from('bank_offers')
+      .select('id, bank_name, offer_text, discount_text, card_color, valid_till, display_order')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    if (data && data.length > 0) bankOffers = data as BankOffer[]
+  } catch { /* table may not exist yet */ }
 
   // Trending: most clicked
   const { data: trending } = await supabase
@@ -81,9 +107,12 @@ export default async function HomePage() {
       {/* ══ PRODUCT FINDER floating widget ══ */}
       <ProductFinder />
 
-      {/* ══ 1. PROMO BANNER ══ */}
+      {/* ══ 1. PROMO BANNER — home_banners table if populated, else site_settings.banners ══ */}
       <FadeInSection className="-mx-4 sm:-mx-6 mb-8">
-        <PromoBanner banners={settings.banners} />
+        {homeBanners.length > 0
+          ? <HomeBannerCarousel banners={homeBanners} />
+          : <PromoBanner banners={settings.banners} />
+        }
       </FadeInSection>
 
       {/* ══ 2. TOP CATEGORIES (from settings) ══ */}
@@ -114,6 +143,13 @@ export default async function HomePage() {
         </div>
       </section>
       </FadeInSection>
+
+      {/* ══ 2b. BANK OFFERS ══ */}
+      {bankOffers.length > 0 && (
+        <FadeInSection delay={0.05}>
+          <BankOffersSection offers={bankOffers} />
+        </FadeInSection>
+      )}
 
       {/* ══ 3. FLASH DEALS ══ */}
       {settings.featureFlags?.showFlashDeals !== false && (

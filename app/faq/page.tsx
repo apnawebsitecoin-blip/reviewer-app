@@ -1,11 +1,33 @@
+import { createClient } from '@/lib/supabase/server'
 import { getSiteSettings } from '@/lib/settings'
+import type { FaqItem } from '@/lib/settings'
 import { HelpCircle } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
 export default async function FaqPage() {
-  const settings = await getSiteSettings()
-  const faqs = settings.faqItems ?? []
+  const supabase = await createClient()
+  let faqs: FaqItem[] = []
+
+  // content_pages table: prefer dedicated row over site_settings.faqItems
+  try {
+    const { data: page } = await supabase
+      .from('content_pages')
+      .select('faq_items')
+      .eq('slug', 'faq')
+      .eq('is_published', true)
+      .maybeSingle()
+
+    if (page?.faq_items && Array.isArray(page.faq_items) && page.faq_items.length > 0) {
+      faqs = page.faq_items as FaqItem[]
+    }
+  } catch { /* table may not exist yet */ }
+
+  // Fall back to site_settings.faqItems
+  if (faqs.length === 0) {
+    const settings = await getSiteSettings()
+    faqs = settings.faqItems ?? []
+  }
 
   return (
     <div className="max-w-2xl mx-auto py-10">
