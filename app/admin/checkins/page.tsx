@@ -61,13 +61,14 @@ export default function AdminCheckinsPage() {
           .select('id, user_id, checked_in_at, reward_amount, profiles(name)')
           .order('checked_in_at', { ascending: false })
           .limit(100),
-        supabase.from('site_settings').select('value').eq('key', 'checkin_bonus_amount').maybeSingle(),
+        supabase.from('site_settings').select('settings').eq('id', 1).single(),
       ])
 
       setTodayCount(todayCnt ?? 0)
       setWeekCount(weekCnt ?? 0)
       setMonthCount(monthCnt ?? 0)
-      if (bonusSetting?.value) setBonusAmount(bonusSetting.value)
+      const savedBonus = (bonusSetting as any)?.settings?.checkin_bonus_amount
+      if (savedBonus != null) setBonusAmount(String(savedBonus))
 
       const rows = (recentData as unknown as CheckinRow[]) ?? []
       setRecent(rows)
@@ -107,7 +108,9 @@ export default function AdminCheckinsPage() {
 
   const handleSaveBonus = async () => {
     setSavingBonus(true)
-    await supabase.from('site_settings').upsert({ key: 'checkin_bonus_amount', value: bonusAmount }, { onConflict: 'key' })
+    const { data: existing } = await supabase.from('site_settings').select('settings').eq('id', 1).single()
+    const merged = { ...(existing as any)?.settings, checkin_bonus_amount: bonusAmount }
+    await supabase.from('site_settings').upsert({ id: 1, settings: merged })
     setSavingBonus(false)
     setBonusSaved(true)
     setTimeout(() => setBonusSaved(false), 3000)
