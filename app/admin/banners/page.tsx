@@ -1,13 +1,16 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
   Image, Plus, Trash2, Loader2, ChevronDown, ChevronUp,
-  ToggleLeft, ToggleRight, GalleryHorizontal,
+  ToggleLeft, ToggleRight, GalleryHorizontal, Upload, AlertCircle,
 } from 'lucide-react'
 
 const INPUT = 'w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition bg-white'
 const LABEL = 'block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5'
+
+const MAX_BANNER_MB = 10
+const MAX_BANNER_BYTES = MAX_BANNER_MB * 1024 * 1024
 
 interface HomeBanner {
   id: string
@@ -26,11 +29,14 @@ const EMPTY = { title: '', subtitle: '', image_url: '', link_url: '', platform: 
 export default function AdminBannersPage() {
   const supabase = createClient()
   const [banners,  setBanners]  = useState<HomeBanner[]>([])
-  const [open,     setOpen]     = useState(false)
-  const [loading,  setLoading]  = useState(false)
-  const [deleting, setDeleting] = useState<string | null>(null)
-  const [toggling, setToggling] = useState<string | null>(null)
-  const [form,     setForm]     = useState({ ...EMPTY })
+  const [open,          setOpen]          = useState(false)
+  const [loading,       setLoading]       = useState(false)
+  const [deleting,      setDeleting]      = useState<string | null>(null)
+  const [toggling,      setToggling]      = useState<string | null>(null)
+  const [form,          setForm]          = useState({ ...EMPTY })
+  const [imgUploading,  setImgUploading]  = useState(false)
+  const [imgUploadErr,  setImgUploadErr]  = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     supabase
@@ -41,6 +47,36 @@ export default function AdminBannersPage() {
   }, [])
 
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }))
+
+  const handleImageUpload = async (file: File) => {
+    setImgUploadErr('')
+    if (file.size > MAX_BANNER_BYTES) {
+      const sizeMB = (file.size / 1024 / 1024).toFixed(1)
+      setImgUploadErr(`File too large (${sizeMB} MB). Maximum allowed is ${MAX_BANNER_MB} MB. Please compress the image and try again.`)
+      return
+    }
+    setImgUploading(true)
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `banners/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const { error } = await supabase.storage.from('review-media').upload(path, file, { upsert: false })
+      if (error) {
+        const msg = error.message ?? ''
+        if (/payload|size|limit|large|exceed/i.test(msg)) {
+          setImgUploadErr(`File too large — maximum ${MAX_BANNER_MB} MB allowed. Please compress the image and try again.`)
+        } else {
+          setImgUploadErr(`Upload failed: ${msg}`)
+        }
+        return
+      }
+      const { data } = supabase.storage.from('review-media').getPublicUrl(path)
+      set('image_url', data.publicUrl)
+    } catch (err: any) {
+      setImgUploadErr(err.message ?? 'Upload failed. Please try again.')
+    } finally {
+      setImgUploading(false)
+    }
+  }
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +92,7 @@ export default function AdminBannersPage() {
     }).select().single()
     if (data && !error) setBanners(prev => [...prev, data as HomeBanner].sort((a, b) => a.display_order - b.display_order))
     setForm({ ...EMPTY })
+    setImgUploadErr('')
     setOpen(false)
     setLoading(false)
   }
@@ -112,8 +149,43 @@ export default function AdminBannersPage() {
               <input className={INPUT} placeholder="e.g. Limited time offer — shop now!" value={form.subtitle} onChange={e => set('subtitle', e.target.value)} />
             </div>
             <div className="col-span-2">
-              <label className={LABEL}>Image URL</label>
-              <input className={INPUT} placeholder="https://..." value={form.image_url} onChange={e => set('image_url', e.target.value)} />
+              <label className={LABEL}>
+                Banner Image
+                <span className="text-gray-400 font-normal ml-1 normal-case">max {MAX_BANNER_MB} MB</span>
+              </label>
+              <div className="flex gap-2">
+                <input
+                  className={INPUT}
+                  placeholder="Paste URL or upload image →"
+                  value={form.image_url}
+                  onChange={e => { set('image_url', e.target.value); setImgUploadErr('') }}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={imgUploading}
+                  className="flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-lg border border-indigo-200 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 disabled:opacity-60 transition whitespace-nowrap"
+                >
+                  {imgUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                  {imgUploading ? 'Uploading…' : 'Upload'}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleImageUpload(f); e.target.value = '' }}
+                />
+              </div>
+              {imgUploadErr && (
+                <p className="flex items-center gap-1.5 text-xs text-red-600 mt-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {imgUploadErr}
+                </p>
+              )}
+              {form.image_url && !imgUploadErr && (
+                <img src={form.image_url} alt="preview" className="mt-2 h-16 rounded-lg object-cover border border-gray-100" />
+              )}
             </div>
             <div>
               <label className={LABEL}>Link URL (optional)</label>

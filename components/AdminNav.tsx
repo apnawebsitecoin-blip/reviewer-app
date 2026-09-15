@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Package, Star, DollarSign,
   Users, BookMarked, Bell, Settings2, Ticket, Film, Zap,
   ArrowDownToLine, CreditCard, ShoppingBag, BarChart3, BookOpen, GalleryHorizontal,
-  UserCircle,
+  UserCircle, CalendarCheck, HelpCircle, LineChart,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -34,6 +34,9 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/payment-settings',    label: 'Payments',       Icon: CreditCard      },
   { href: '/admin/blog',                 label: 'Blog / Guides',  Icon: BookOpen        },
   { href: '/admin/settings',            label: 'Site Settings',  Icon: Settings2       },
+  { href: '/admin/checkins',            label: 'Check-ins',      Icon: CalendarCheck   },
+  { href: '/admin/questions',           label: 'Q&A Moderation', Icon: HelpCircle      },
+  { href: '/admin/price-history',       label: 'Price History',  Icon: LineChart       },
   { href: '/admin/account',             label: 'My Account',     Icon: UserCircle      },
 ]
 

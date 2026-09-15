@@ -47,7 +47,7 @@ export default async function PrivacyPage() {
           <p key={i}>{para}</p>
         ))}
         <p className="text-xs text-gray-400 pt-4 border-t border-gray-100">
-          Last updated: August 2026 · Admin → Site Settings → Legal & FAQ se content update karo
+          Last updated: August 2026
         </p>
       </div>
     </div>

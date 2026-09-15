@@ -6,6 +6,17 @@ import { Upload, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import type { Sentiment } from '@/lib/types'
 
+const MAX_FILE_MB = 10
+const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024
+
+function checkFileSize(file: File): string | null {
+  if (file.size > MAX_FILE_BYTES) {
+    const sizeMB = (file.size / 1024 / 1024).toFixed(1)
+    return `File too large (${sizeMB} MB). Maximum allowed is ${MAX_FILE_MB} MB. Please compress the image and try again.`
+  }
+  return null
+}
+
 interface Props {
   productId: string
   onSuccess: () => void
@@ -35,12 +46,18 @@ export default function ReviewForm({ productId, onSuccess, onClose }: Props) {
     negative: t('negativeLabel'),
   }
 
-  const uploadFile = async (file: File, folder: string): Promise<string | null> => {
+  const uploadFile = async (file: File, folder: string): Promise<string> => {
     const ext = file.name.split('.').pop()
     const { data: { user } } = await supabase.auth.getUser()
     const path = `${folder}/${user!.id}-${Date.now()}.${ext}`
     const { error } = await supabase.storage.from('review-media').upload(path, file)
-    if (error) return null
+    if (error) {
+      const msg = error.message ?? ''
+      if (msg.toLowerCase().includes('payload') || msg.toLowerCase().includes('size') || msg.toLowerCase().includes('limit') || msg.toLowerCase().includes('large') || msg.toLowerCase().includes('exceed')) {
+        throw new Error(`File too large — maximum ${MAX_FILE_MB} MB allowed. Please compress the image and try again.`)
+      }
+      throw new Error(`Upload failed: ${msg}`)
+    }
     const { data } = supabase.storage.from('review-media').getPublicUrl(path)
     return data.publicUrl
   }
@@ -50,9 +67,18 @@ export default function ReviewForm({ productId, onSuccess, onClose }: Props) {
     if (!agreed)      { setError(t('errorCheckbox')); return }
     if (!invoiceFile) { setError(t('errorInvoice'));  return }
 
+    // Client-side file size check — catches oversized files before hitting Supabase
+    const invoiceSizeError = checkFileSize(invoiceFile)
+    if (invoiceSizeError) { setError(invoiceSizeError); return }
+    if (mediaFile) {
+      const mediaSizeError = checkFileSize(mediaFile)
+      if (mediaSizeError) { setError(mediaSizeError); return }
+    }
+
     setLoading(true)
     setError('')
 
+    try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setError(t('errorLogin')); setLoading(false); return }
 
@@ -93,6 +119,10 @@ export default function ReviewForm({ productId, onSuccess, onClose }: Props) {
     }
 
     onSuccess()
+    } catch (err: any) {
+      setError(err.message ?? 'Upload failed. Please try again.')
+      setLoading(false)
+    }
   }
 
   const wordCount = reviewText.trim().split(/\s+/).filter(Boolean).length
@@ -137,6 +167,7 @@ export default function ReviewForm({ productId, onSuccess, onClose }: Props) {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               {t('uploadInvoice')} <span className="text-red-500">*</span>
+              <span className="text-xs text-gray-400 font-normal ml-2">max {MAX_FILE_MB} MB</span>
             </label>
             <label className="flex items-center gap-2 border-2 border-dashed rounded-lg p-3 cursor-pointer hover:border-indigo-400 transition">
               <Upload className="w-4 h-4 text-gray-400" />
@@ -147,7 +178,10 @@ export default function ReviewForm({ productId, onSuccess, onClose }: Props) {
 
           {/* Media upload */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('uploadMedia')}</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('uploadMedia')}
+              <span className="text-xs text-gray-400 font-normal ml-2">max {MAX_FILE_MB} MB</span>
+            </label>
             <label className="flex items-center gap-2 border-2 border-dashed rounded-lg p-3 cursor-pointer hover:border-indigo-400 transition">
               <Upload className="w-4 h-4 text-gray-400" />
               <span className="text-sm text-gray-500">{mediaFile ? mediaFile.name : t('mediaPlaceholder')}</span>
