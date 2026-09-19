@@ -100,7 +100,8 @@ export default function SignupPage() {
 
     const referralCodeGenerated = data.user.id.substring(0, 8).toUpperCase()
 
-    if (referredById && referralCode.trim().toUpperCase() === referralCodeGenerated) {
+    // Self-referral: the new user used their own referral code
+    if (referredById === data.user.id) {
       setError(t('selfReferralError'))
       setLoading(false)
       return
@@ -111,15 +112,10 @@ export default function SignupPage() {
       { onConflict: 'id' }
     )
 
+    // Referral bonus is credited server-side (admin key) to avoid RLS blocking
+    // the referrer's wallet update and to add IP-based fraud detection.
     if (referredById) {
-      const { data: referrerProfile } = await supabase
-        .from('profiles').select('wallet_balance').eq('id', referredById).single()
-      if (referrerProfile) {
-        await supabase.from('profiles')
-          .update({ wallet_balance: (referrerProfile.wallet_balance ?? 0) + 20 })
-          .eq('id', referredById)
-      }
-      await supabase.from('profiles').update({ wallet_balance: 20 }).eq('id', data.user.id)
+      fetch('/api/auth/complete-referral', { method: 'POST' }).catch(() => {})
     }
 
     fetch('/api/auth/log-ip', { method: 'POST' }).catch(() => {})

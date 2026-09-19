@@ -92,8 +92,13 @@ export default function ReviewForm({ productId, onSuccess, onClose }: Props) {
     if ((recentCount ?? 0) >= 3) { setError(t('errorSpam')); setLoading(false); return }
 
     const hash = await computeFileHash(invoiceFile)
-    const { data: existing } = await supabase.from('reviews').select('id').eq('invoice_hash', hash).limit(1)
-    const duplicate = (existing ?? []).length > 0
+    const [{ data: hashMatch }, { data: textMatch }] = await Promise.all([
+      supabase.from('reviews').select('id').eq('invoice_hash', hash).limit(1),
+      reviewText.trim().length > 0
+        ? supabase.from('reviews').select('id').eq('product_id', productId).eq('review_text', reviewText.trim()).limit(1)
+        : Promise.resolve({ data: [] }),
+    ])
+    const duplicate = (hashMatch ?? []).length > 0 || (textMatch ?? []).length > 0
 
     const invoiceUrl = await uploadFile(invoiceFile, 'invoices')
     const mediaUrl = mediaFile ? await uploadFile(mediaFile, 'media') : null
